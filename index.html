@@ -78,23 +78,6 @@
             .table-container {
                 margin: 0 -16px; /* Negative margin to allow table to be wider than container on mobile */
             }
-            .input-row {
-                display: flex;
-                flex-direction: row;
-                width: 100%;
-                margin-bottom: 8px;
-            }
-            .input-row .course-code {
-                flex: 2;
-                margin-right: 4px;
-            }
-            .input-row .section {
-                flex: 1;
-                margin-right: 4px;
-            }
-            .input-row .add-course {
-                flex: 1;
-            }
         }
         /* Add specific styling for sections datalist */
         .section-input-container {
@@ -120,6 +103,24 @@
         /* Add padding to body to prevent footer overlap */
         body {
             padding-bottom: 50px;
+        }
+
+        /* Input row styling for all screen sizes */
+        .input-row {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            margin-bottom: 8px;
+            gap: 4px; /* Use gap for consistent spacing */
+        }
+        .input-row .course-code {
+            flex: 2;
+        }
+        .input-row .section {
+            flex: 1;
+        }
+        .input-row .add-course {
+            flex: 1;
         }
     </style>
 </head>
@@ -165,14 +166,14 @@
         <button id="add-more-btn" class="bg-yellow-300 text-gray-800 p-3 rounded mb-6 w-full max-w-xs sm:w-auto sm:px-6 hover:bg-yellow-400 transition">+ Add More</button>
 
         <div class="w-full overflow-x-auto table-container">
-            <table id="exam-schedule" class="min-w-full bg-opacity-70 bg-black border border-white">
+            <table id="exam-schedule" class="min-w-full bg-opacity-70 bg-black border border-white text-center">
                 <thead>
                     <tr class="border-b border-white">
-                        <th class="px-3 py-3 text-left">Date</th>
-                        <th class="px-3 py-3 text-left">Time</th>
-                        <th class="px-3 py-3 text-left">Course</th>
-                        <th class="px-3 py-3 text-left">Section</th>
-                        <th class="px-3 py-3 text-left">Classroom</th>
+                        <th class="px-3 py-3 text-center">Date</th>
+                        <th class="px-3 py-3 text-center">Time</th>
+                        <th class="px-3 py-3 text-center">Course</th>
+                        <th class="px-3 py-3 text-center">Section</th>
+                        <th class="px-3 py-3 text-center">Classroom</th>
                     </tr>
                 </thead>
                 <tbody id="schedule-body">
@@ -653,5 +654,9 @@
             rows.forEach(row => scheduleBody.appendChild(row));
         }
     </script>
+
+<script defer data-domain="bracu-exam-routine.itzmrz.xyz" src="https://plausible.io/js/script.outbound-links.js"></script>
+<script>window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }</script>
+
 </body>
 </html>
