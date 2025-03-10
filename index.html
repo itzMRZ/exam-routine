@@ -154,17 +154,17 @@
 <style>
     /* Add more padding at the bottom to accommodate the fixed footer */
     body {
-        padding-bottom: 80px !important;
+        padding-bottom: 120px !important; /* Increased padding for more space */
     }
 
     /* Create proper spacing for the content area */
     #capture-area {
-        margin-bottom: 30px;
+        margin-bottom: 50px; /* Increased margin */
     }
 
     /* Ensure screenshot button has space above the footer */
     #screenshot-btn {
-        margin-bottom: 60px;
+        margin-bottom: 80px; /* Increased margin */
     }
 </style>
 </head>
@@ -539,60 +539,65 @@
             sortScheduleTable();
         }
 
+        // Replace the current addMoreInputs function with this one:
         function addMoreInputs() {
+            // Get the container and count existing rows
             const courseInputsContainer = document.getElementById('course-inputs');
+            const currentRowCount = courseInputsContainer.querySelectorAll('.input-row').length;
 
-            // Create new row container
-            const rowIndex = document.querySelectorAll('.course-code').length;
+            // Check if we've reached the maximum allowed rows (7)
+            if (currentRowCount >= 7) {
+                showToast('Maximum of 7 course inputs allowed', 'info');
+                return;
+            }
 
-            // Create new course code input
-            const codeColumn = courseInputsContainer.children[0];
-            const newCodeInput = document.createElement('input');
-            newCodeInput.type = 'text';
-            newCodeInput.placeholder = 'Course Code';
-            newCodeInput.className = 'course-code bg-white text-gray-800 p-3 rounded mb-2 w-full max-w-xs text-center';
-            newCodeInput.setAttribute('list', 'course-suggestions');
-            newCodeInput.setAttribute('autocomplete', 'off');
+            // Create new row
+            const newRow = document.createElement('div');
+            newRow.className = 'input-row';
 
-            // Add event listener for course input
-            newCodeInput.addEventListener('input', function() {
+            // Row index for this new row
+            const rowIndex = currentRowCount;
+
+            // Create HTML for the new row with all elements
+            newRow.innerHTML = `
+                <input type="text" placeholder="Course Code" class="course-code bg-white text-gray-800 p-3 rounded mb-2 w-full text-center" autocomplete="off">
+                <input type="text" placeholder="Sec" class="section bg-white text-gray-800 p-3 rounded mb-2 w-full text-center" autocomplete="off">
+                <button class="add-course bg-yellow-300 text-gray-800 p-3 rounded mb-2 w-full flex items-center justify-center hover:bg-yellow-400 transition">
+                    <i class="fas fa-plus mr-2"></i>ADD
+                </button>
+            `;
+
+            // Append the new row to the container
+            courseInputsContainer.appendChild(newRow);
+
+            // Set up course suggestions for the new inputs
+            const newCourseInput = newRow.querySelector('.course-code');
+            const newSectionInput = newRow.querySelector('.section');
+
+            // Connect course input to datalist
+            newCourseInput.setAttribute('list', 'course-suggestions');
+
+            // Create section datalist
+            const datalistId = `section-suggestions-${rowIndex}`;
+            let sectionDatalist = document.getElementById(datalistId);
+
+            if (!sectionDatalist) {
+                sectionDatalist = document.createElement('datalist');
+                sectionDatalist.id = datalistId;
+                document.body.appendChild(sectionDatalist);
+            }
+
+            // Connect section input to its datalist
+            newSectionInput.setAttribute('list', datalistId);
+
+            // Add event listeners
+            newCourseInput.addEventListener('input', function() {
                 updateSectionOptions(rowIndex);
             });
 
-            codeColumn.appendChild(newCodeInput);
-
-            // Create new section input (not select)
-            const sectionColumn = courseInputsContainer.children[1];
-            const newSectionInput = document.createElement('input');
-            newSectionInput.type = 'text';
-            newSectionInput.placeholder = 'Sec';
-            newSectionInput.className = 'section bg-white text-gray-800 p-3 rounded mb-2 w-full max-w-xs text-center';
-            newSectionInput.setAttribute('autocomplete', 'off');
-
-            // Create a unique datalist ID for this section
-            const datalistId = `section-suggestions-${rowIndex}`;
-            const sectionDatalist = document.createElement('datalist');
-            sectionDatalist.id = datalistId;
-            document.body.appendChild(sectionDatalist);
-
-            // Connect input to datalist
-            newSectionInput.setAttribute('list', datalistId);
-
-            sectionColumn.appendChild(newSectionInput);
-
-            // Create new add button
-            const buttonColumn = courseInputsContainer.children[2];
-            const newButton = document.createElement('button');
-            newButton.className = 'add-course bg-yellow-300 text-gray-800 p-3 rounded mb-2 w-full max-w-xs flex items-center justify-center hover:bg-yellow-400 transition';
-            newButton.innerHTML = '<i class="fas fa-plus mr-2"></i>ADD';
-
-            // Add event listener to the new button
-            newButton.addEventListener('click', function() {
-                const index = Array.from(buttonColumn.children).indexOf(newButton);
-                addCourseFromInput(index);
+            newRow.querySelector('.add-course').addEventListener('click', function() {
+                addCourseFromInput(rowIndex);
             });
-
-            buttonColumn.appendChild(newButton);
         }
 
         function takeScreenshot() {
