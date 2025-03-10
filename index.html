@@ -125,7 +125,48 @@
     </style>
     <script defer data-domain="bracu-exam-routine.itzmrz.xyz" src="https://plausible.io/js/script.outbound-links.js"></script>
     <script>window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }</script>
+    <script>
+  (function() {
+    // Detect Facebook/Messenger in-app browsers
+    var ua = navigator.userAgent || navigator.vendor || window.opera;
+    var isFacebookBrowser = (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1);
+    var isMessengerBrowser = (ua.indexOf("MessengerForiOS") > -1) || (ua.indexOf("Messenger") > -1);
 
+    // If detected, redirect to external browser
+    if (isFacebookBrowser || isMessengerBrowser) {
+      // Get current URL
+      var url = window.location.href;
+
+      // Try to force open in external browser
+      window.open(url, '_system', 'location=yes');
+
+      // Fallback - suggest copy/paste URL
+      setTimeout(function() {
+        document.body.innerHTML = '<div style="text-align:center; padding:20px;">' +
+          '<h2>For the best experience, please open this page in Chrome or Safari</h2>' +
+          '<p>Copy this link and paste in your browser:</p>' +
+          '<p><strong>' + url + '</strong></p>' +
+          '</div>';
+      }, 1000);
+    }
+  })();
+</script>
+<style>
+    /* Add more padding at the bottom to accommodate the fixed footer */
+    body {
+        padding-bottom: 80px !important;
+    }
+
+    /* Create proper spacing for the content area */
+    #capture-area {
+        margin-bottom: 30px;
+    }
+
+    /* Ensure screenshot button has space above the footer */
+    #screenshot-btn {
+        margin-bottom: 60px;
+    }
+</style>
 </head>
 <body class="bg-black text-white flex flex-col items-center justify-center min-h-screen p-4 sm:p-6" style="background-image: url('https://i.postimg.cc/yWq3K43q/4d4883bf150f7162cc97c2c822f7cb24.jpg'); background-size: cover; background-attachment: fixed;">
     <div id="toast-container" class="toast-container"></div>
