@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring-25 Midterm Schedule</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Add favicon -->
+    <link href="data:image/x-icon;base64,AAABAAEAEBACAAAAAACwAAAAFgAAACgAAAAQAAAAIAAAAAEAAQAAAAAAQAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAA/4QAAMxjAADMYwAA/GMAAMxjAADMawAAMHcAADBjAAAAAAAA+AAAAMBmAADAPAAA+BgAAMAYAADAPAAA+GYAAAAAAAAznAAAM5wAAAOcAAAznAAAM5QAAM+IAADPnAAA//8AAAf/AAA/mQAAP8MAAAfnAAA/5wAAP8MAAAeZAAD//wAA" rel="icon" type="image/x-icon">
+    <style>
+        /* Toast notification system */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .toast {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            min-width: 280px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transform: translateX(100%);
+            animation: slideIn 0.3s forwards, fadeOut 0.5s 3s forwards;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        @keyframes slideIn {
+            to { transform: translateX(0); }
+        }
+        @keyframes fadeOut {
+            to { opacity: 0; }
+        }
+        .success {
+            background-color: rgba(52, 211, 153, 0.9);
+            color: white;
+        }
+        .error {
+            background-color: rgba(239, 68, 68, 0.9);
+            color: white;
+        }
+        .info {
+            background-color: rgba(59, 130, 246, 0.9);
+            color: white;
+        }
+        /* Custom dropdown styling */
+        .custom-select {
+            position: relative;
+        }
+        .custom-select .options {
+            display: none;
+            position: absolute;
+            background-color: white;
+            max-height: 200px;
+            overflow-y: auto;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 1000;
+            width: 100%;
+        }
+        .custom-select .option {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        .custom-select .option:hover {
+            background-color: #f3f4f6;
+        }
+        /* Mobile optimizations */
+        @media (max-width: 640px) {
+            input, button, select {
+                font-size: 16px; /* Prevents iOS zoom on focus */
+                height: 44px; /* More touch-friendly */
+            }
+            .table-container {
+                margin: 0 -16px; /* Negative margin to allow table to be wider than container on mobile */
+            }
+            .input-row {
+                display: flex;
+                flex-direction: row;
+                width: 100%;
+                margin-bottom: 8px;
+            }
+            .input-row .course-code {
+                flex: 2;
+                margin-right: 4px;
+            }
+            .input-row .section {
+                flex: 1;
+                margin-right: 4px;
+            }
+            .input-row .add-course {
+                flex: 1;
+            }
+        }
+        /* Add specific styling for sections datalist */
+        .section-input-container {
+            position: relative;
+            width: 100%;
+        }
+
+        /* Footer styling */
+        .footer {
+            background-color: rgba(30, 58, 138, 0.7);
+            padding: 8px 0;
+            margin-top: 20px;
+            backdrop-filter: blur(5px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .footer a {
+            color: #fcd34d; /* Yellow color matching the buttons */
+        }
+        .footer a:hover {
+            color: white;
+        }
+
+        /* Add padding to body to prevent footer overlap */
+        body {
+            padding-bottom: 50px;
+        }
+    </style>
+</head>
+<body class="bg-black text-white flex flex-col items-center justify-center min-h-screen p-4 sm:p-6" style="background-image: url('https://i.postimg.cc/yWq3K43q/4d4883bf150f7162cc97c2c822f7cb24.jpg'); background-size: cover; background-attachment: fixed;">
+    <div id="toast-container" class="toast-container"></div>
+
+    <div id="capture-area" class="flex flex-col items-center w-full max-w-4xl">
+        <h1 class="text-3xl font-bold mb-6 text-center">SPRING-25 MIDTERM SCHEDULE</h1>
+
+        <!-- Modified structure for mobile layout -->
+        <div id="course-inputs" class="w-full mb-4">
+            <!-- Each row contains course code, section, and add button -->
+            <div class="input-row">
+                <input type="text" placeholder="Course Code" class="course-code bg-white text-gray-800 p-3 rounded mb-2 w-full text-center" autocomplete="off">
+                <input type="text" placeholder="Sec" class="section bg-white text-gray-800 p-3 rounded mb-2 w-full text-center" autocomplete="off">
+                <button class="add-course bg-yellow-300 text-gray-800 p-3 rounded mb-2 w-full flex items-center justify-center hover:bg-yellow-400 transition">
+                    <i class="fas fa-plus mr-2"></i>ADD
+                </button>
+            </div>
+            <div class="input-row">
+                <input type="text" placeholder="Course Code" class="course-code bg-white text-gray-800 p-3 rounded mb-2 w-full text-center" autocomplete="off">
+                <input type="text" placeholder="Sec" class="section bg-white text-gray-800 p-3 rounded mb-2 w-full text-center" autocomplete="off">
+                <button class="add-course bg-yellow-300 text-gray-800 p-3 rounded mb-2 w-full flex items-center justify-center hover:bg-yellow-400 transition">
+                    <i class="fas fa-plus mr-2"></i>ADD
+                </button>
+            </div>
+            <div class="input-row">
+                <input type="text" placeholder="Course Code" class="course-code bg-white text-gray-800 p-3 rounded mb-2 w-full text-center" autocomplete="off">
+                <input type="text" placeholder="Sec" class="section bg-white text-gray-800 p-3 rounded mb-2 w-full text-center" autocomplete="off">
+                <button class="add-course bg-yellow-300 text-gray-800 p-3 rounded mb-2 w-full flex items-center justify-center hover:bg-yellow-400 transition">
+                    <i class="fas fa-plus mr-2"></i>ADD
+                </button>
+            </div>
+            <div class="input-row">
+                <input type="text" placeholder="Course Code" class="course-code bg-white text-gray-800 p-3 rounded mb-2 w-full text-center" autocomplete="off">
+                <input type="text" placeholder="Sec" class="section bg-white text-gray-800 p-3 rounded mb-2 w-full text-center" autocomplete="off">
+                <button class="add-course bg-yellow-300 text-gray-800 p-3 rounded mb-2 w-full flex items-center justify-center hover:bg-yellow-400 transition">
+                    <i class="fas fa-plus mr-2"></i>ADD
+                </button>
+            </div>
+        </div>
+
+        <button id="add-more-btn" class="bg-yellow-300 text-gray-800 p-3 rounded mb-6 w-full max-w-xs sm:w-auto sm:px-6 hover:bg-yellow-400 transition">+ Add More</button>
+
+        <div class="w-full overflow-x-auto table-container">
+            <table id="exam-schedule" class="min-w-full bg-opacity-70 bg-black border border-white">
+                <thead>
+                    <tr class="border-b border-white">
+                        <th class="px-3 py-3 text-left">Date</th>
+                        <th class="px-3 py-3 text-left">Time</th>
+                        <th class="px-3 py-3 text-left">Course</th>
+                        <th class="px-3 py-3 text-left">Section</th>
+                        <th class="px-3 py-3 text-left">Classroom</th>
+                    </tr>
+                </thead>
+                <tbody id="schedule-body">
+                    <!-- Exam schedule rows will be added here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <button id="screenshot-btn" class="bg-yellow-300 text-gray-800 p-3 rounded mt-6 w-full max-w-xs sm:w-auto sm:px-6 flex items-center justify-center hover:bg-yellow-400 transition">
+        <i class="fas fa-camera mr-2"></i>Screenshot
+    </button>
+
+    <!-- Add the footer -->
+    <footer class="text-center fixed bottom-0 left-0 right-0 shadow-lg footer">
+        <a href="https://github.com/itzMRZ" class="flex items-center justify-center gap-2 text-sm font-bold transition-colors duration-300">
+          <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+            <path fill-rule="evenodd"
+                  d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                  clip-rule="evenodd"/>
+          </svg>
+          By MRZ
+        </a>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up toast notification container
+            const toastContainer = document.getElementById('toast-container');
+
+            // Load schedule data
+            loadScheduleData();
+
+            // Add event listeners
+            setupEventListeners();
+        });
+
+        // Store the exam data and course information globally
+        let examData = [];
+        let availableCourses = new Set();
+
+        // Course to sections mapping for quick lookups
+        let courseSections = {};
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            toast.innerHTML = `
+                <div>${message}</div>
+                <button class="ml-2 text-white" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+            document.getElementById('toast-container').appendChild(toast);
+
+            // Remove toast after animation completes
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 3500);
+        }
+
+        function loadScheduleData() {
+            console.log("Fetching exam data...");
+            fetch('midterm_schedule.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Filter out entries that don't have all required fields
+                    examData = data.exams
+                        .filter(exam => exam["Course"] && exam["Section"] && exam["Mid Date"] &&
+                                       exam["Start Time"] && exam["End Time"] && exam["Room."])
+                        .map(exam => {
+                            const courseCode = exam["Course"];
+                            const section = exam["Section"];
+
+                            // Collect unique course codes for suggestions
+                            availableCourses.add(courseCode);
+
+                            // Build course to sections mapping
+                            if (!courseSections[courseCode]) {
+                                courseSections[courseCode] = new Set();
+                            }
+                            courseSections[courseCode].add(section);
+
+                            return {
+                                date: formatDateFromJSON(exam["Mid Date"]),
+                                time: convertTimeFromJSON(exam["Start Time"], exam["End Time"]),
+                                courseCode: courseCode,
+                                section: section,
+                                classroom: exam["Room."]
+                            };
+                        });
+
+                    console.log("Loaded exam data:", examData.length, "entries");
+
+                    // Initialize course suggestions
+                    initializeCourseSuggestions();
+
+                    // Show success message
+                    showToast(`Loaded ${examData.length} exam entries successfully`, 'success');
+                })
+                .catch(error => {
+                    console.error('Error loading schedule data:', error);
+                    showToast('Error loading schedule data. Please refresh the page.', 'error');
+                });
+        }
+
+        // Initialize course input fields with suggestions
+        function initializeCourseSuggestions() {
+            // Create course suggestions datalist
+            const datalist = document.createElement('datalist');
+            datalist.id = 'course-suggestions';
+
+            // Add options for each course
+            Array.from(availableCourses).sort().forEach(course => {
+                const option = document.createElement('option');
+                option.value = course;
+                datalist.appendChild(option);
+            });
+
+            // Add to document
+            document.body.appendChild(datalist);
+
+            // Connect inputs to datalist and add event listeners
+            document.querySelectorAll('.course-code').forEach((input, index) => {
+                // Connect to datalist
+                input.setAttribute('list', 'course-suggestions');
+
+                // Add input handler to update section options
+                input.addEventListener('input', function() {
+                    updateSectionOptions(index);
+                });
+            });
+
+            // Create section datalists for each input
+            document.querySelectorAll('.section').forEach((input, index) => {
+                // Create a unique ID for this section's datalist
+                const datalistId = `section-suggestions-${index}`;
+
+                // Create the datalist element
+                const sectionDatalist = document.createElement('datalist');
+                sectionDatalist.id = datalistId;
+
+                // Add to document
+                document.body.appendChild(sectionDatalist);
+
+                // Connect input to its datalist
+                input.setAttribute('list', datalistId);
+            });
+        }
+
+        // Update section options based on selected course
+        function updateSectionOptions(index) {
+            const courseInput = document.querySelectorAll('.course-code')[index];
+            const sectionInput = document.querySelectorAll('.section')[index];
+            const courseCode = courseInput.value.trim();
+
+            // Get the datalist for this section input
+            const datalistId = `section-suggestions-${index}`;
+            let datalist = document.getElementById(datalistId);
+
+            // Create it if it doesn't exist
+            if (!datalist) {
+                datalist = document.createElement('datalist');
+                datalist.id = datalistId;
+                document.body.appendChild(datalist);
+                sectionInput.setAttribute('list', datalistId);
+            }
+
+            // Clear current options
+            datalist.innerHTML = '';
+
+            // If course code exists in our data, populate sections
+            if (courseCode && courseSections[courseCode]) {
+                // Sort sections numerically
+                const sections = Array.from(courseSections[courseCode]).sort((a, b) => {
+                    const numA = parseInt(a, 10) || 0;
+                    const numB = parseInt(b, 10) || 0;
+                    return numA - numB;
+                });
+
+                sections.forEach(section => {
+                    const option = document.createElement('option');
+                    option.value = section;
+                    datalist.appendChild(option);
+                });
+            }
+        }
+
+        // Helper function to format date from "YYYY-MM-DD" to "D-MMM-YY"
+        function formatDateFromJSON(dateStr) {
+            const [year, month, day] = dateStr.split('-');
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            // Remove any leading zeros from the day
+            return `${parseInt(day, 10)}-${monthNames[parseInt(month, 10) - 1]}-${year.substr(2)}`;
+        }
+
+        // Helper function to convert 24-hour time to "h:mm AM/PM"
+        function convertToAMPM(timeString) {
+            const [hourStr, minuteStr] = timeString.split(':');
+            let hour = parseInt(hourStr, 10);
+            const minute = parseInt(minuteStr, 10);
+            const ampm = hour >= 12 ? "PM" : "AM";
+            hour = hour % 12;
+            if (hour === 0) hour = 12;
+            return `${hour}:${minute.toString().padStart(2, '0')} ${ampm}`;
+        }
+
+        // Helper function to convert start and end times from JSON to the desired format
+        function convertTimeFromJSON(startTime, endTime) {
+            return `${convertToAMPM(startTime)} - ${convertToAMPM(endTime)}`;
+        }
+
+        function populateExamSchedule(exams) {
+            console.log("Populating exam schedule with", exams.length, "exams");
+            const scheduleBody = document.getElementById('schedule-body');
+
+            if (!scheduleBody) {
+                console.error("Could not find schedule-body element!");
+                return;
+            }
+
+            // Sort exams by date and time
+            exams.sort((a, b) => {
+                const dateCompare = new Date(convertDate(a.date)) - new Date(convertDate(b.date));
+                if (dateCompare !== 0) return dateCompare;
+
+                // If same date, compare times
+                return convertTimeToMinutes(a.time.split(' - ')[0]) - convertTimeToMinutes(b.time.split(' - ')[0]);
+            });
+
+            // Add each exam to the table
+            exams.forEach(exam => {
+                // Check if this exam is already in the table to avoid duplicates
+                const existingRows = Array.from(scheduleBody.querySelectorAll('tr')).filter(row => {
+                    return row.cells[2].textContent === exam.courseCode &&
+                           row.cells[3].textContent === exam.section;
+                });
+
+                if (existingRows.length === 0) {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-white hover:bg-blue-800 transition';
+
+                    // Create row cells
+                    row.innerHTML = `
+                        <td class="px-3 py-3">${exam.date}</td>
+                        <td class="px-3 py-3">${exam.time}</td>
+                        <td class="px-3 py-3">${exam.courseCode}</td>
+                        <td class="px-3 py-3">${exam.section}</td>
+                        <td class="px-3 py-3">${exam.classroom}</td>
+                    `;
+
+                    scheduleBody.appendChild(row);
+                }
+            });
+        }
+
+        function setupEventListeners() {
+            // Add more button
+            document.getElementById('add-more-btn').addEventListener('click', function() {
+                addMoreInputs();
+            });
+
+            // Screenshot button
+            document.getElementById('screenshot-btn').addEventListener('click', function() {
+                takeScreenshot();
+            });
+
+            // Add course buttons
+            document.querySelectorAll('.add-course').forEach((button, index) => {
+                button.addEventListener('click', function() {
+                    addCourseFromInput(index);
+                });
+            });
+        }
+
+        // Function to handle adding courses from input fields
+        function addCourseFromInput(index) {
+            const courseCode = document.querySelectorAll('.course-code')[index].value;
+            const section = document.querySelectorAll('.section')[index].value;
+
+            console.log(`Trying to add course: ${courseCode} Section: ${section}`);
+
+            if (courseCode && section) {
+                // Find matching exams in the JSON data
+                const matchingExams = examData.filter(exam =>
+                    exam.courseCode.toLowerCase() === courseCode.toLowerCase() &&
+                    exam.section === section
+                );
+
+                console.log(`Found ${matchingExams.length} matching exams`);
+
+                if (matchingExams.length > 0) {
+                    // Add matching exams to the schedule
+                    addExamsToSchedule(matchingExams);
+                    showToast(`Added ${courseCode} Section ${section} to exam schedule`, 'success');
+                } else {
+                    showToast(`No exam found for ${courseCode} Section ${section}`, 'error');
+                }
+            } else {
+                showToast('Please enter both course code and section', 'error');
+            }
+        }
+
+        function addExamsToSchedule(exams) {
+            console.log("Adding exams to schedule");
+            // Add the exams to the schedule
+            populateExamSchedule(exams);
+
+            // Resort the table
+            sortScheduleTable();
+        }
+
+        function addMoreInputs() {
+            const courseInputsContainer = document.getElementById('course-inputs');
+
+            // Create new row container
+            const rowIndex = document.querySelectorAll('.course-code').length;
+
+            // Create new course code input
+            const codeColumn = courseInputsContainer.children[0];
+            const newCodeInput = document.createElement('input');
+            newCodeInput.type = 'text';
+            newCodeInput.placeholder = 'Course Code';
+            newCodeInput.className = 'course-code bg-white text-gray-800 p-3 rounded mb-2 w-full max-w-xs text-center';
+            newCodeInput.setAttribute('list', 'course-suggestions');
+            newCodeInput.setAttribute('autocomplete', 'off');
+
+            // Add event listener for course input
+            newCodeInput.addEventListener('input', function() {
+                updateSectionOptions(rowIndex);
+            });
+
+            codeColumn.appendChild(newCodeInput);
+
+            // Create new section input (not select)
+            const sectionColumn = courseInputsContainer.children[1];
+            const newSectionInput = document.createElement('input');
+            newSectionInput.type = 'text';
+            newSectionInput.placeholder = 'Sec';
+            newSectionInput.className = 'section bg-white text-gray-800 p-3 rounded mb-2 w-full max-w-xs text-center';
+            newSectionInput.setAttribute('autocomplete', 'off');
+
+            // Create a unique datalist ID for this section
+            const datalistId = `section-suggestions-${rowIndex}`;
+            const sectionDatalist = document.createElement('datalist');
+            sectionDatalist.id = datalistId;
+            document.body.appendChild(sectionDatalist);
+
+            // Connect input to datalist
+            newSectionInput.setAttribute('list', datalistId);
+
+            sectionColumn.appendChild(newSectionInput);
+
+            // Create new add button
+            const buttonColumn = courseInputsContainer.children[2];
+            const newButton = document.createElement('button');
+            newButton.className = 'add-course bg-yellow-300 text-gray-800 p-3 rounded mb-2 w-full max-w-xs flex items-center justify-center hover:bg-yellow-400 transition';
+            newButton.innerHTML = '<i class="fas fa-plus mr-2"></i>ADD';
+
+            // Add event listener to the new button
+            newButton.addEventListener('click', function() {
+                const index = Array.from(buttonColumn.children).indexOf(newButton);
+                addCourseFromInput(index);
+            });
+
+            buttonColumn.appendChild(newButton);
+        }
+
+        function takeScreenshot() {
+            // Check if table has content
+            if (document.getElementById('schedule-body').children.length === 0) {
+                showToast('No exams to screenshot. Please add courses first.', 'error');
+                return;
+            }
+
+            // Create a temporary container that includes only what we want in the screenshot
+            const tempContainer = document.createElement('div');
+            tempContainer.className = 'bg-black p-6 rounded';
+
+            // Add the title
+            const title = document.createElement('h1');
+            title.className = 'text-2xl font-bold mb-6 text-white text-center';
+            title.textContent = 'SPRING-25 MIDTERM SCHEDULE';
+            tempContainer.appendChild(title);
+
+            // Clone the table
+            const tableElement = document.getElementById('exam-schedule');
+            const tableClone = tableElement.cloneNode(true);
+            tempContainer.appendChild(tableClone);
+
+            // Temporarily add to document but hide it
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '-9999px';
+            document.body.appendChild(tempContainer);
+
+            // Take screenshot of the temporary element
+            html2canvas(tempContainer, {
+                backgroundColor: 'rgba(0, 0, 0, 0.9)'
+            }).then(canvas => {
+                // Create download link
+                const link = document.createElement('a');
+                link.download = 'Spring25-Midterm-Schedule.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                // Clean up
+                document.body.removeChild(tempContainer);
+
+                // Show success message
+                showToast('Schedule screenshot saved!', 'success');
+            }).catch(error => {
+                console.error('Screenshot error:', error);
+                showToast('Error taking screenshot. Please try again.', 'error');
+                document.body.removeChild(tempContainer);
+            });
+        }
+
+        function convertDate(dateStr) {
+            // Convert date strings like "18-Mar-25" to "2025-03-18" for proper sorting
+            const parts = dateStr.split('-');
+            const month = {
+                'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
+                'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+            };
+            return `20${parts[2]}-${month[parts[1]]}-${parts[0].padStart(2, '0')}`;
+        }
+
+        function convertTimeToMinutes(timeStr) {
+            // Convert time strings like "12:00 PM" to minutes for sorting
+            const [time, period] = timeStr.split(' ');
+            let [hours, minutes] = time.split(':').map(Number);
+
+            if (period === 'PM' && hours !== 12) {
+                hours += 12;
+            } else if (period === 'AM' && hours === 12) {
+                hours = 0;
+            }
+
+            return hours * 60 + minutes;
+        }
+
+        function sortScheduleTable() {
+            const scheduleBody = document.getElementById('schedule-body');
+            if (!scheduleBody) return;
+
+            const rows = Array.from(scheduleBody.querySelectorAll('tr'));
+            if (rows.length <= 1) return;
+
+            // Sort rows
+            rows.sort((a, b) => {
+                const dateA = a.cells[0].textContent;
+                const dateB = b.cells[0].textContent;
+                const dateCompare = new Date(convertDate(dateA)) - new Date(convertDate(dateB));
+
+                if (dateCompare !== 0) return dateCompare;
+
+                // If same date, compare times
+                const timeA = a.cells[1].textContent.split(' - ')[0];
+                const timeB = b.cells[1].textContent.split(' - ')[0];
+                return convertTimeToMinutes(timeA) - convertTimeToMinutes(timeB);
+            });
+
+            // Clear and reappend sorted rows
+            while (scheduleBody.firstChild) {
+                scheduleBody.removeChild(scheduleBody.firstChild);
+            }
+
+            // Reappend sorted rows
+            rows.forEach(row => scheduleBody.appendChild(row));
+        }
+    </script>
+</body>
+</html>
