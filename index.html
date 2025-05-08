@@ -934,34 +934,31 @@
             // Append the new row to the container
             courseInputsContainer.appendChild(newRow);
 
-            // Set up course suggestions for the new inputs
+            // Get the new inputs and button
             const newCourseInput = newRow.querySelector('.course-code');
             const newSectionInput = newRow.querySelector('.section');
+            const newAddButton = newRow.querySelector('.add-course');
 
-            // Connect course input to datalist
-            newCourseInput.setAttribute('list', 'course-suggestions');
-
-            // Create section datalist
-            const datalistId = `section-suggestions-${rowIndex}`;
-            let sectionDatalist = document.getElementById(datalistId);
-
-            if (!sectionDatalist) {
-                sectionDatalist = document.createElement('datalist');
-                sectionDatalist.id = datalistId;
-                document.body.appendChild(sectionDatalist);
-            }
-
-            // Connect section input to its datalist
-            newSectionInput.setAttribute('list', datalistId);
-
-            // Add event listeners
-            newCourseInput.addEventListener('input', function() {
-                updateSectionOptions(rowIndex);
+            // Set up event listeners for the new course input
+            newCourseInput.addEventListener('focus', () => showCourseDropdown(newCourseInput, rowIndex));
+            newCourseInput.addEventListener('input', () => {
+                const debouncedShowCourseDropdown = debounce((input, index) => {
+                    showCourseDropdown(input, index);
+                }, 150);
+                debouncedShowCourseDropdown(newCourseInput, rowIndex);
             });
 
-            newRow.querySelector('.add-course').addEventListener('click', function() {
-                addCourseFromInput(rowIndex);
+            // Set up event listeners for the new section input
+            newSectionInput.addEventListener('focus', () => showSectionDropdown(newSectionInput, rowIndex));
+            newSectionInput.addEventListener('input', () => {
+                const debouncedShowSectionDropdown = debounce((input, index) => {
+                    showSectionDropdown(input, index);
+                }, 150);
+                debouncedShowSectionDropdown(newSectionInput, rowIndex);
             });
+
+            // Add event listener for the new add button
+            newAddButton.addEventListener('click', () => addCourseFromInput(rowIndex));
         }
 
         function updateSectionOptions(index) {
@@ -1087,4 +1084,3 @@
 
 </body>
 </html>
-`````
