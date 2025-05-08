@@ -290,7 +290,22 @@
             const toastContainer = document.getElementById('toast-container');
 
             // Load schedule data
-            loadScheduleData();
+            loadScheduleData().then(() => {
+                // Load cached courses after exam data is loaded
+                const cachedCourses = loadFromCache();
+                if (cachedCourses.length > 0) {
+                    cachedCourses.forEach(course => {
+                        const matchingExams = examData.filter(exam =>
+                            exam.courseCode.toLowerCase() === course.courseCode.toLowerCase() &&
+                            exam.section === course.section
+                        );
+                        if (matchingExams.length > 0) {
+                            addExamsToSchedule(matchingExams);
+                        }
+                    });
+                    showToast(`Loaded ${cachedCourses.length} courses from cache`, 'info');
+                }
+            });
 
             // Add event listeners
             setupEventListeners();
@@ -303,6 +318,43 @@
 
         // Course to sections mapping for quick lookups
         let courseSections = {};
+
+        // Cache functions for user input
+        const CACHE_KEY = 'examScheduleCache';
+        const CACHE_EXPIRY = 72 * 60 * 60 * 1000; // 72 hours in milliseconds
+
+        function saveToCache(courseCode, section) {
+            const now = new Date().getTime();
+            let cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{"courses":[],"timestamp":0}');
+
+            // Check if cache has expired
+            if (now - cache.timestamp > CACHE_EXPIRY) {
+                cache = { courses: [], timestamp: now };
+            }
+
+            // Add new course if it doesn't exist
+            if (!cache.courses.some(c => c.courseCode === courseCode && c.section === section)) {
+                cache.courses.push({ courseCode, section });
+                localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+            }
+        }
+
+        function loadFromCache() {
+            const now = new Date().getTime();
+            const cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{"courses":[],"timestamp":0}');
+
+            // Return empty array if cache has expired
+            if (now - cache.timestamp > CACHE_EXPIRY) {
+                localStorage.removeItem(CACHE_KEY);
+                return [];
+            }
+
+            return cache.courses;
+        }
+
+        function clearCache() {
+            localStorage.removeItem(CACHE_KEY);
+        }
 
         function updateTitle() {
             const examType = isFinalsSchedule ? "FINAL" : "MIDTERM";
@@ -757,6 +809,8 @@
                 if (matchingExams.length > 0) {
                     // Add matching exams to the schedule
                     addExamsToSchedule(matchingExams);
+                    // Save to cache
+                    saveToCache(courseCode, section);
                     showToast(`Added ${courseCode} Section ${section} to exam schedule`, 'success');
                 } else {
                     showToast(`No exam found for ${courseCode} Section ${section}`, 'error');
