@@ -364,7 +364,7 @@
 
         function loadScheduleData() {
             console.log("Fetching exam data...");
-            fetch('exam_data.json')
+            return fetch('exam_data.json')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
@@ -687,28 +687,54 @@
 
         // Helper function to format date from "YYYY-MM-DD" to "D-MMM-YY"
         function formatDateFromJSON(dateStr) {
-            // Accepts formats like "20-May-25" or "2025-05-20"
             if (!dateStr) return '';
-            // Try to parse D-MMM-YY
-            const dmy = /^([0-9]{1,2})-([A-Za-z]{3})-([0-9]{2,4})$/;
-            const ymd = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            let day, month, year;
-            if (dmy.test(dateStr)) {
-                const match = dmy.exec(dateStr);
-                day = parseInt(match[1], 10);
-                month = monthNames.indexOf(match[2]);
-                year = parseInt(match[3], 10);
-                if (year < 100) year += 2000;
-                return `${day}-${monthNames[month]}-${String(year).slice(-2)}`;
-            } else if (ymd.test(dateStr)) {
-                const match = ymd.exec(dateStr);
-                year = parseInt(match[1], 10);
-                month = parseInt(match[2], 10) - 1;
-                day = parseInt(match[3], 10);
-                return `${day}-${monthNames[month]}-${String(year).slice(-2)}`;
+
+            // Try to parse D-MMM-YY format (e.g. "20-Mar-25")
+            const dmyPattern = /^([0-9]{1,2})-([A-Za-z]{3})-([0-9]{2,4})$/;
+            // Try to parse YYYY-MM-DD format (e.g. "2025-03-20")
+            const ymdPattern = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
+
+            if (dmyPattern.test(dateStr)) {
+                const [_, day, month, year] = dmyPattern.exec(dateStr);
+                return `${parseInt(day)}-${month}-${year.length === 2 ? year : year.slice(-2)}`;
+            } else if (ymdPattern.test(dateStr)) {
+                const [_, year, month, day] = ymdPattern.exec(dateStr);
+                const monthIndex = parseInt(month) - 1;
+                if (monthIndex >= 0 && monthIndex < 12) {
+                    return `${parseInt(day)}-${monthNames[monthIndex]}-${year.slice(-2)}`;
+                }
             }
             return dateStr;
+        }
+
+        function formatDate(dateStr) {
+            try {
+                const parts = dateStr.split('-');
+                if (parts.length !== 3) return dateStr;
+
+                // If the date is already in D-MMM-YY format
+                if (parts[1].length === 3 && isNaN(parts[1])) {
+                    const day = parseInt(parts[0]);
+                    const month = parts[1];
+                    const year = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
+                    return `${day}-${month}-${year.slice(-2)}`;
+                }
+
+                // If the date is in a different format
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const monthIndex = parseInt(parts[1]) - 1;
+                if (monthIndex >= 0 && monthIndex < 12) {
+                    const day = parseInt(parts[0]);
+                    const month = months[monthIndex];
+                    const year = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
+                    return `${day}-${month}-${year.slice(-2)}`;
+                }
+                return dateStr;
+            } catch (e) {
+                console.error('Error formatting date:', e);
+                return dateStr;
+            }
         }
 
         // Helper function to convert 24-hour time to "h:mm AM/PM"
@@ -792,15 +818,17 @@
 
         // Function to handle adding courses from input fields
         function addCourseFromInput(index) {
-            const courseCode = document.querySelectorAll('.course-code')[index].value;
-            const section = document.querySelectorAll('.section')[index].value;
+            const courseInput = document.querySelectorAll('.course-code')[index];
+            const sectionInput = document.querySelectorAll('.section')[index];
+            const courseCode = courseInput.value.trim().toUpperCase();
+            const section = sectionInput.value.trim();
 
             console.log(`Trying to add course: ${courseCode} Section: ${section}`);
 
             if (courseCode && section) {
                 // Find matching exams in the JSON data
                 const matchingExams = examData.filter(exam =>
-                    exam.courseCode.toLowerCase() === courseCode.toLowerCase() &&
+                    exam.courseCode && exam.courseCode.toLowerCase() === courseCode.toLowerCase() &&
                     exam.section === section
                 );
 
@@ -821,12 +849,59 @@
         }
 
         function addExamsToSchedule(exams) {
-            console.log("Adding exams to schedule");
-            // Add the exams to the schedule
-            populateExamSchedule(exams);
+            if (!exams || exams.length === 0) return;
 
-            // Resort the table
+            const scheduleBody = document.getElementById('schedule-body');
+            if (!scheduleBody) {
+                console.error("Could not find schedule-body element!");
+                return;
+            }
+
+            // Add each exam to the table
+            exams.forEach(exam => {
+                // Check if this exam is already in the table to avoid duplicates
+                const existingRows = Array.from(scheduleBody.querySelectorAll('tr')).filter(row => {
+                    return row.cells[2].textContent === exam.courseCode &&
+                           row.cells[3].textContent === exam.section;
+                });
+
+                if (existingRows.length === 0) {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-white hover:bg-blue-800 transition';
+
+                    // Format date to match the expected format
+                    const formattedDate = formatDate(exam.date);
+
+                    // Create row cells
+                    row.innerHTML = `
+                        <td class="px-3 py-3">${formattedDate}</td>
+                        <td class="px-3 py-3">${exam.time}</td>
+                        <td class="px-3 py-3">${exam.courseCode}</td>
+                        <td class="px-3 py-3">${exam.section}</td>
+                        <td class="px-3 py-3">${exam.classroom}</td>
+                    `;
+
+                    scheduleBody.appendChild(row);
+                }
+            });
+
+            // Sort the table after adding new entries
             sortScheduleTable();
+        }
+
+        function removeRow(button) {
+            const row = button.closest('tr');
+            const courseCode = row.cells[2].textContent;
+            const section = row.cells[3].textContent;
+
+            row.remove();
+
+            // Remove from cache
+            const cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{"courses":[],"timestamp":0}');
+            cache.courses = cache.courses.filter(c => !(c.courseCode === courseCode && c.section === section));
+            localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+
+            showToast(`Removed ${courseCode} Section ${section} from exam schedule`, 'info');
         }
 
         function addMoreInputs() {
@@ -887,6 +962,22 @@
             newRow.querySelector('.add-course').addEventListener('click', function() {
                 addCourseFromInput(rowIndex);
             });
+        }
+
+        function updateSectionOptions(index) {
+            const courseInput = document.querySelectorAll('.course-code')[index];
+            const sectionInput = document.querySelectorAll('.section')[index];
+            const courseCode = courseInput.value.trim().toUpperCase();
+
+            // Clear section input when course changes
+            sectionInput.value = '';
+
+            if (!courseCode || !courseSections[courseCode]) {
+                return;
+            }
+
+            // Show section dropdown with available sections
+            showSectionDropdown(sectionInput, index);
         }
 
         function takeScreenshot() {
@@ -996,3 +1087,4 @@
 
 </body>
 </html>
+`````
