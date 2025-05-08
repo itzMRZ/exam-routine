@@ -18,13 +18,14 @@
             z-index: 9999;
         }
         .toast {
-            padding: 16px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            min-width: 280px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            padding: 12px; /* Reduced from 16px */
+            border-radius: 6px; /* Reduced from 8px */
+            margin-bottom: 8px; /* Reduced from 10px */
+            min-width: 240px; /* Reduced from 280px */
+            font-size: 0.875rem; /* Added smaller font size */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             transform: translateX(100%);
-            animation: slideIn 0.3s forwards, fadeOut 0.5s 3s forwards;
+            animation: slideIn 0.2s forwards, fadeOut 0.5s 2s forwards; /* Reduced total duration from 3.3s to 2.2s */
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -303,7 +304,6 @@
                             addExamsToSchedule(matchingExams);
                         }
                     });
-                    showToast(`Loaded ${cachedCourses.length} courses from cache`, 'info');
                 }
             });
 
