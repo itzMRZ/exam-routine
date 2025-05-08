@@ -122,6 +122,47 @@
         .input-row .add-course {
             flex: 1;
         }
+
+        /* Dropdown improvements */
+        .dropdown {
+            position: absolute;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            z-index: 9999;
+            max-height: 12rem;
+            overflow-y: auto;
+            width: 100%;
+            color: #1f2937; /* Add dark text color */
+        }
+        .dropdown-option {
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #1f2937; /* Ensure text is visible */
+        }
+        .dropdown-option:hover {
+            background-color: #fef3c7;
+        }
+        .dropdown-option.active {
+            background-color: #fde68a;
+        }
+        .dropdown-option.disabled {
+            color: #9ca3af;
+            cursor: default;
+        }
+        /* Scrollbar styling */
+        .dropdown::-webkit-scrollbar {
+            width: 6px;
+        }
+        .dropdown::-webkit-scrollbar-track {
+            background: #f3f4f6;
+        }
+        .dropdown::-webkit-scrollbar-thumb {
+            background-color: #d1d5db;
+            border-radius: 3px;
+        }
     </style>
     <script defer data-domain="bracu-exam-routine.itzmrz.xyz" src="https://plausible.io/js/script.outbound-links.js"></script>
     <script>window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }</script>
@@ -258,34 +299,20 @@
         // Store the exam data and course information globally
         let examData = [];
         let availableCourses = new Set();
+        let isFinalsSchedule = false; // Track if we're showing finals or midterms
 
         // Course to sections mapping for quick lookups
         let courseSections = {};
 
-        function showToast(message, type = 'info') {
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-
-            toast.innerHTML = `
-                <div>${message}</div>
-                <button class="ml-2 text-white" onclick="this.parentElement.remove()">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-
-            document.getElementById('toast-container').appendChild(toast);
-
-            // Remove toast after animation completes
-            setTimeout(() => {
-                if (toast.parentElement) {
-                    toast.remove();
-                }
-            }, 3500);
+        function updateTitle() {
+            const examType = isFinalsSchedule ? "FINAL" : "MIDTERM";
+            document.querySelector('h1').textContent = `SPRING-25 ${examType} SCHEDULE`;
+            document.title = `Spring-25 ${examType} Schedule`;
         }
 
         function loadScheduleData() {
             console.log("Fetching exam data...");
-            fetch('midterm_schedule.json')
+            fetch('exam_data.json')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
@@ -293,13 +320,21 @@
                     return response.json();
                 })
                 .then(data => {
+                    // Determine if this is finals schedule by checking first exam
+                    if (data.exams && data.exams.length > 0) {
+                        isFinalsSchedule = 'Final Date' in data.exams[0];
+                        updateTitle();
+                    }
+
                     // Filter out entries that don't have all required fields
                     examData = data.exams
-                        .filter(exam => exam["Course"] && exam["Section"] && exam["Mid Date"] &&
-                                       exam["Start Time"] && exam["End Time"] && exam["Room."])
+                        .filter(exam => exam["Course"] && exam["Section"] &&
+                               (exam["Mid Date"] || exam["Final Date"]) &&
+                               exam["Start Time"] && exam["End Time"] && exam["Room."])
                         .map(exam => {
                             const courseCode = exam["Course"];
                             const section = exam["Section"];
+                            const dateField = exam["Final Date"] ? "Final Date" : "Mid Date";
 
                             // Collect unique course codes for suggestions
                             availableCourses.add(courseCode);
@@ -311,7 +346,7 @@
                             courseSections[courseCode].add(section);
 
                             return {
-                                date: formatDateFromJSON(exam["Mid Date"]),
+                                date: formatDateFromJSON(exam[dateField]),
                                 time: convertTimeFromJSON(exam["Start Time"], exam["End Time"]),
                                 courseCode: courseCode,
                                 section: section,
@@ -333,94 +368,295 @@
                 });
         }
 
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+
+            // Add to container
+            const container = document.getElementById('toast-container');
+            container.appendChild(toast);
+
+            // Remove after animation
+            toast.addEventListener('animationend', (e) => {
+                if (e.animationName === 'fadeOut') {
+                    container.removeChild(toast);
+                }
+            });
+        }
+
         // Initialize course input fields with suggestions
         function initializeCourseSuggestions() {
-            // Create course suggestions datalist
-            const datalist = document.createElement('datalist');
-            datalist.id = 'course-suggestions';
+            const debouncedShowCourseDropdown = debounce((input, index) => {
+                showCourseDropdown(input, index);
+            }, 150);
 
-            // Add options for each course
-            Array.from(availableCourses).sort().forEach(course => {
-                const option = document.createElement('option');
-                option.value = course;
-                datalist.appendChild(option);
-            });
+            const debouncedShowSectionDropdown = debounce((input, index) => {
+                showSectionDropdown(input, index);
+            }, 150);
 
-            // Add to document
-            document.body.appendChild(datalist);
-
-            // Connect inputs to datalist and add event listeners
             document.querySelectorAll('.course-code').forEach((input, index) => {
-                // Connect to datalist
-                input.setAttribute('list', 'course-suggestions');
-
-                // Add input handler to update section options
-                input.addEventListener('input', function() {
-                    updateSectionOptions(index);
-                });
+                input.addEventListener('focus', () => showCourseDropdown(input, index));
+                input.addEventListener('input', () => debouncedShowCourseDropdown(input, index));
             });
 
-            // Create section datalists for each input
             document.querySelectorAll('.section').forEach((input, index) => {
-                // Create a unique ID for this section's datalist
-                const datalistId = `section-suggestions-${index}`;
-
-                // Create the datalist element
-                const sectionDatalist = document.createElement('datalist');
-                sectionDatalist.id = datalistId;
-
-                // Add to document
-                document.body.appendChild(sectionDatalist);
-
-                // Connect input to its datalist
-                input.setAttribute('list', datalistId);
+                input.addEventListener('focus', () => showSectionDropdown(input, index));
+                input.addEventListener('input', () => debouncedShowSectionDropdown(input, index));
             });
         }
 
-        // Update section options based on selected course
-        function updateSectionOptions(index) {
+        // Debounce function to prevent too many updates
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function showCourseDropdown(input, index) {
+            hideAllDropdowns();
+
+            const inputRect = input.getBoundingClientRect();
+            const scrollY = window.scrollY;
+
+            const dropdown = document.createElement('div');
+            dropdown.className = 'dropdown';
+            dropdown.id = `course-dropdown-${index}`;
+            dropdown.setAttribute('role', 'listbox');
+            dropdown.style.minWidth = '200px';
+
+            const filter = input.value.trim().toLowerCase();
+            let filtered = Array.from(availableCourses)
+                .filter(course => course.toLowerCase().includes(filter));
+
+            if (filtered.length === 0) {
+                const noOpt = document.createElement('div');
+                noOpt.className = 'dropdown-option disabled';
+                noOpt.textContent = 'No match';
+                dropdown.appendChild(noOpt);
+            } else {
+                filtered.sort().forEach((course, optionIndex) => {
+                    const option = document.createElement('div');
+                    option.className = 'dropdown-option';
+                    option.setAttribute('role', 'option');
+                    option.setAttribute('tabindex', '-1');
+                    option.setAttribute('data-index', optionIndex.toString());
+                    option.textContent = course;
+
+                    option.addEventListener('mouseenter', () => {
+                        dropdown.querySelectorAll('.dropdown-option').forEach(opt =>
+                            opt.classList.remove('active'));
+                        option.classList.add('active');
+                    });
+
+                    option.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        selectCourse(input, course, index);
+                    });
+
+                    dropdown.appendChild(option);
+                });
+            }
+
+            document.body.appendChild(dropdown);
+            positionDropdown(dropdown, input);
+            setupKeyboardNav(dropdown, input, index, 'course');
+        }
+
+        function showSectionDropdown(input, index) {
+            hideAllDropdowns();
+
             const courseInput = document.querySelectorAll('.course-code')[index];
-            const sectionInput = document.querySelectorAll('.section')[index];
             const courseCode = courseInput.value.trim();
 
-            // Get the datalist for this section input
-            const datalistId = `section-suggestions-${index}`;
-            let datalist = document.getElementById(datalistId);
+            const dropdown = document.createElement('div');
+            dropdown.className = 'dropdown';
+            dropdown.id = `section-dropdown-${index}`;
+            dropdown.setAttribute('role', 'listbox');
+            dropdown.style.minWidth = '100px';
 
-            // Create it if it doesn't exist
-            if (!datalist) {
-                datalist = document.createElement('datalist');
-                datalist.id = datalistId;
-                document.body.appendChild(datalist);
-                sectionInput.setAttribute('list', datalistId);
+            let filtered = [];
+            if (courseCode && courseSections[courseCode]) {
+                filtered = Array.from(courseSections[courseCode]);
+                const filter = input.value.trim().toLowerCase();
+                filtered = filtered.filter(section =>
+                    section.toLowerCase().includes(filter));
             }
 
-            // Clear current options
-            datalist.innerHTML = '';
+            if (filtered.length === 0) {
+                const noOpt = document.createElement('div');
+                noOpt.className = 'dropdown-option disabled';
+                noOpt.textContent = courseCode ? 'No sections found' : 'Select a course first';
+                dropdown.appendChild(noOpt);
+            } else {
+                filtered
+                    .sort((a, b) => (parseInt(a, 10) || 0) - (parseInt(b, 10) || 0))
+                    .forEach((section, optionIndex) => {
+                        const option = document.createElement('div');
+                        option.className = 'dropdown-option';
+                        option.setAttribute('role', 'option');
+                        option.setAttribute('tabindex', '-1');
+                        option.setAttribute('data-index', optionIndex.toString());
+                        option.textContent = section;
 
-            // If course code exists in our data, populate sections
-            if (courseCode && courseSections[courseCode]) {
-                // Sort sections numerically
-                const sections = Array.from(courseSections[courseCode]).sort((a, b) => {
-                    const numA = parseInt(a, 10) || 0;
-                    const numB = parseInt(b, 10) || 0;
-                    return numA - numB;
-                });
+                        option.addEventListener('mouseenter', () => {
+                            dropdown.querySelectorAll('.dropdown-option').forEach(opt =>
+                                opt.classList.remove('active'));
+                            option.classList.add('active');
+                        });
 
-                sections.forEach(section => {
-                    const option = document.createElement('option');
-                    option.value = section;
-                    datalist.appendChild(option);
-                });
+                        option.addEventListener('mousedown', (e) => {
+                            e.preventDefault();
+                            selectSection(input, section, index);
+                        });
+
+                        dropdown.appendChild(option);
+                    });
+            }
+
+            document.body.appendChild(dropdown);
+            positionDropdown(dropdown, input);
+            setupKeyboardNav(dropdown, input, index, 'section');
+        }
+
+        function positionDropdown(dropdown, input) {
+            const inputRect = input.getBoundingClientRect();
+            const scrollY = window.scrollY;
+            const viewportHeight = window.innerHeight;
+
+            // Position horizontally
+            dropdown.style.left = inputRect.left + 'px';
+            dropdown.style.width = inputRect.width + 'px';
+
+            // Check if there's room below
+            const spaceBelow = viewportHeight - inputRect.bottom;
+            const spaceAbove = inputRect.top;
+            const dropdownHeight = dropdown.offsetHeight;
+
+            if (spaceBelow >= dropdownHeight || spaceBelow >= spaceAbove) {
+                // Position below
+                dropdown.style.top = (inputRect.bottom + scrollY) + 'px';
+            } else {
+                // Position above
+                dropdown.style.top = (inputRect.top + scrollY - dropdownHeight) + 'px';
             }
         }
+
+        function setupKeyboardNav(dropdown, input, index, type) {
+            const options = Array.from(dropdown.querySelectorAll('.dropdown-option:not(.disabled)'));
+            let activeIndex = -1;
+
+            input.addEventListener('keydown', function(e) {
+                switch(e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        activeIndex = Math.min(activeIndex + 1, options.length - 1);
+                        updateActiveOption();
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        activeIndex = Math.max(activeIndex - 1, 0);
+                        updateActiveOption();
+                        break;
+                    case 'Enter':
+                        e.preventDefault();
+                        if (activeIndex >= 0) {
+                            const selectedOption = options[activeIndex];
+                            if (type === 'course') {
+                                selectCourse(input, selectedOption.textContent, index);
+                            } else {
+                                selectSection(input, selectedOption.textContent, index);
+                            }
+                        }
+                        break;
+                    case 'Escape':
+                        e.preventDefault();
+                        hideAllDropdowns();
+                        input.blur();
+                        break;
+                }
+            });
+
+            function updateActiveOption() {
+                options.forEach(opt => opt.classList.remove('active'));
+                if (activeIndex >= 0) {
+                    options[activeIndex].classList.add('active');
+                    options[activeIndex].scrollIntoView({ block: 'nearest' });
+                }
+            }
+        }
+
+        function selectCourse(input, course, index) {
+            input.value = course;
+            hideAllDropdowns();
+            updateSectionOptions(index);
+            // Focus the section input
+            const sectionInput = document.querySelectorAll('.section')[index];
+            sectionInput.focus();
+            showSectionDropdown(sectionInput, index);
+        }
+
+        function selectSection(input, section, index) {
+            input.value = section;
+            hideAllDropdowns();
+            // Focus the add button
+            const addButton = input.closest('.input-row').querySelector('.add-course');
+            addButton.focus();
+        }
+
+        function hideAllDropdowns() {
+            document.querySelectorAll('.dropdown').forEach(dropdown => dropdown.remove());
+        }
+
+        // Click outside handler
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.course-code') && !e.target.closest('.section')) {
+                hideAllDropdowns();
+            }
+        });
+
+        // Update scroll handler
+        window.addEventListener('scroll', debounce(() => {
+            const activeDropdown = document.querySelector('.dropdown');
+            if (activeDropdown) {
+                const input = document.activeElement;
+                if (input && (input.classList.contains('course-code') || input.classList.contains('section'))) {
+                    positionDropdown(activeDropdown, input);
+                }
+            }
+        }, 100), { passive: true });
 
         // Helper function to format date from "YYYY-MM-DD" to "D-MMM-YY"
         function formatDateFromJSON(dateStr) {
-            const [year, month, day] = dateStr.split('-');
+            // Accepts formats like "20-May-25" or "2025-05-20"
+            if (!dateStr) return '';
+            // Try to parse D-MMM-YY
+            const dmy = /^([0-9]{1,2})-([A-Za-z]{3})-([0-9]{2,4})$/;
+            const ymd = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            // Remove any leading zeros from the day
-            return `${parseInt(day, 10)}-${monthNames[parseInt(month, 10) - 1]}-${year.substr(2)}`;
+            let day, month, year;
+            if (dmy.test(dateStr)) {
+                const match = dmy.exec(dateStr);
+                day = parseInt(match[1], 10);
+                month = monthNames.indexOf(match[2]);
+                year = parseInt(match[3], 10);
+                if (year < 100) year += 2000;
+                return `${day}-${monthNames[month]}-${String(year).slice(-2)}`;
+            } else if (ymd.test(dateStr)) {
+                const match = ymd.exec(dateStr);
+                year = parseInt(match[1], 10);
+                month = parseInt(match[2], 10) - 1;
+                day = parseInt(match[3], 10);
+                return `${day}-${monthNames[month]}-${String(year).slice(-2)}`;
+            }
+            return dateStr;
         }
 
         // Helper function to convert 24-hour time to "h:mm AM/PM"
@@ -613,12 +849,13 @@
             // Add the title
             const title = document.createElement('h1');
             title.className = 'text-2xl font-bold mb-6 text-white text-center';
-            title.textContent = 'SPRING-25 MIDTERM SCHEDULE';
+            title.textContent = document.querySelector('h1').textContent;
             tempContainer.appendChild(title);
 
-            // Clone the table
+            // Clone the table and add custom styles for screenshot
             const tableElement = document.getElementById('exam-schedule');
             const tableClone = tableElement.cloneNode(true);
+            tableClone.className = 'min-w-full bg-opacity-70 bg-black border border-white text-center';
             tempContainer.appendChild(tableClone);
 
             // Temporarily add to document but hide it
