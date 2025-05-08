@@ -292,19 +292,8 @@
 
             // Load schedule data
             loadScheduleData().then(() => {
-                // Load cached courses after exam data is loaded
-                const cachedCourses = loadFromCache();
-                if (cachedCourses.length > 0) {
-                    cachedCourses.forEach(course => {
-                        const matchingExams = examData.filter(exam =>
-                            exam.courseCode.toLowerCase() === course.courseCode.toLowerCase() &&
-                            exam.section === course.section
-                        );
-                        if (matchingExams.length > 0) {
-                            addExamsToSchedule(matchingExams);
-                        }
-                    });
-                }
+                // Initialize suggestions after data is loaded
+                initializeCourseSuggestions();
             });
 
             // Add event listeners
@@ -318,49 +307,6 @@
 
         // Course to sections mapping for quick lookups
         let courseSections = {};
-
-        // Cache functions for user input
-        const CACHE_KEY = 'examScheduleCache';
-        const CACHE_EXPIRY = 72 * 60 * 60 * 1000; // 72 hours in milliseconds
-
-        function saveToCache(courseCode, section) {
-            const now = new Date().getTime();
-            let cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{"courses":[],"timestamp":0}');
-
-            // Check if cache has expired
-            if (now - cache.timestamp > CACHE_EXPIRY) {
-                cache = { courses: [], timestamp: now };
-            }
-
-            // Add new course if it doesn't exist
-            if (!cache.courses.some(c => c.courseCode === courseCode && c.section === section)) {
-                cache.courses.push({ courseCode, section });
-                localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
-            }
-        }
-
-        function loadFromCache() {
-            const now = new Date().getTime();
-            const cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{"courses":[],"timestamp":0}');
-
-            // Return empty array if cache has expired
-            if (now - cache.timestamp > CACHE_EXPIRY) {
-                localStorage.removeItem(CACHE_KEY);
-                return [];
-            }
-
-            return cache.courses;
-        }
-
-        function clearCache() {
-            localStorage.removeItem(CACHE_KEY);
-        }
-
-        function updateTitle() {
-            const examType = isFinalsSchedule ? "FINAL" : "MIDTERM";
-            document.querySelector('h1').textContent = `SPRING-25 ${examType} SCHEDULE`;
-            document.title = `Spring-25 ${examType} Schedule`;
-        }
 
         function loadScheduleData() {
             console.log("Fetching exam data...");
@@ -407,17 +353,47 @@
                         });
 
                     console.log("Loaded exam data:", examData.length, "entries");
-
-                    // Initialize course suggestions
-                    initializeCourseSuggestions();
-
-                    // Show success message
                     showToast(`Loaded ${examData.length} exam entries successfully`, 'success');
                 })
                 .catch(error => {
                     console.error('Error loading schedule data:', error);
                     showToast('Error loading schedule data. Please refresh the page.', 'error');
                 });
+        }
+
+        function addCourseFromInput(index) {
+            const courseInput = document.querySelectorAll('.course-code')[index];
+            const sectionInput = document.querySelectorAll('.section')[index];
+            const courseCode = courseInput.value.trim().toUpperCase();
+            const section = sectionInput.value.trim();
+
+            console.log(`Trying to add course: ${courseCode} Section: ${section}`);
+
+            if (courseCode && section) {
+                // Find matching exams in the JSON data
+                const matchingExams = examData.filter(exam =>
+                    exam.courseCode && exam.courseCode.toLowerCase() === courseCode.toLowerCase() &&
+                    exam.section === section
+                );
+
+                console.log(`Found ${matchingExams.length} matching exams`);
+
+                if (matchingExams.length > 0) {
+                    // Add matching exams to the schedule
+                    addExamsToSchedule(matchingExams);
+                    showToast(`Added ${courseCode} Section ${section} to exam schedule`, 'success');
+                } else {
+                    showToast(`No exam found for ${courseCode} Section ${section}`, 'error');
+                }
+            } else {
+                showToast('Please enter both course code and section', 'error');
+            }
+        }
+
+        function updateTitle() {
+            const examType = isFinalsSchedule ? "FINAL" : "MIDTERM";
+            document.querySelector('h1').textContent = `SPRING-25 ${examType} SCHEDULE`;
+            document.title = `Spring-25 ${examType} Schedule`;
         }
 
         // Toast notification function
@@ -814,94 +790,6 @@
                     addCourseFromInput(index);
                 });
             });
-        }
-
-        // Function to handle adding courses from input fields
-        function addCourseFromInput(index) {
-            const courseInput = document.querySelectorAll('.course-code')[index];
-            const sectionInput = document.querySelectorAll('.section')[index];
-            const courseCode = courseInput.value.trim().toUpperCase();
-            const section = sectionInput.value.trim();
-
-            console.log(`Trying to add course: ${courseCode} Section: ${section}`);
-
-            if (courseCode && section) {
-                // Find matching exams in the JSON data
-                const matchingExams = examData.filter(exam =>
-                    exam.courseCode && exam.courseCode.toLowerCase() === courseCode.toLowerCase() &&
-                    exam.section === section
-                );
-
-                console.log(`Found ${matchingExams.length} matching exams`);
-
-                if (matchingExams.length > 0) {
-                    // Add matching exams to the schedule
-                    addExamsToSchedule(matchingExams);
-                    // Save to cache
-                    saveToCache(courseCode, section);
-                    showToast(`Added ${courseCode} Section ${section} to exam schedule`, 'success');
-                } else {
-                    showToast(`No exam found for ${courseCode} Section ${section}`, 'error');
-                }
-            } else {
-                showToast('Please enter both course code and section', 'error');
-            }
-        }
-
-        function addExamsToSchedule(exams) {
-            if (!exams || exams.length === 0) return;
-
-            const scheduleBody = document.getElementById('schedule-body');
-            if (!scheduleBody) {
-                console.error("Could not find schedule-body element!");
-                return;
-            }
-
-            // Add each exam to the table
-            exams.forEach(exam => {
-                // Check if this exam is already in the table to avoid duplicates
-                const existingRows = Array.from(scheduleBody.querySelectorAll('tr')).filter(row => {
-                    return row.cells[2].textContent === exam.courseCode &&
-                           row.cells[3].textContent === exam.section;
-                });
-
-                if (existingRows.length === 0) {
-                    const row = document.createElement('tr');
-                    row.className = 'border-b border-white hover:bg-blue-800 transition';
-
-                    // Format date to match the expected format
-                    const formattedDate = formatDate(exam.date);
-
-                    // Create row cells
-                    row.innerHTML = `
-                        <td class="px-3 py-3">${formattedDate}</td>
-                        <td class="px-3 py-3">${exam.time}</td>
-                        <td class="px-3 py-3">${exam.courseCode}</td>
-                        <td class="px-3 py-3">${exam.section}</td>
-                        <td class="px-3 py-3">${exam.classroom}</td>
-                    `;
-
-                    scheduleBody.appendChild(row);
-                }
-            });
-
-            // Sort the table after adding new entries
-            sortScheduleTable();
-        }
-
-        function removeRow(button) {
-            const row = button.closest('tr');
-            const courseCode = row.cells[2].textContent;
-            const section = row.cells[3].textContent;
-
-            row.remove();
-
-            // Remove from cache
-            const cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{"courses":[],"timestamp":0}');
-            cache.courses = cache.courses.filter(c => !(c.courseCode === courseCode && c.section === section));
-            localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
-
-            showToast(`Removed ${courseCode} Section ${section} from exam schedule`, 'info');
         }
 
         function addMoreInputs() {
