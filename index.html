@@ -361,22 +361,56 @@
                 });
         }
 
+        function addExamsToSchedule(exams) {
+            if (!exams || exams.length === 0) return;
+
+            const scheduleBody = document.getElementById('schedule-body');
+            if (!scheduleBody) {
+                console.error("Could not find schedule-body element!");
+                return;
+            }
+
+            // Add each exam to the table
+            exams.forEach(exam => {
+                // Check if this exam is already in the table to avoid duplicates
+                const existingRows = Array.from(scheduleBody.querySelectorAll('tr')).filter(row => {
+                    return row.cells[2].textContent === exam.courseCode &&
+                           row.cells[3].textContent === exam.section;
+                });
+
+                if (existingRows.length === 0) {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-white hover:bg-blue-800 transition';
+
+                    // Create row cells
+                    row.innerHTML = `
+                        <td class="px-3 py-3">${exam.date}</td>
+                        <td class="px-3 py-3">${exam.time}</td>
+                        <td class="px-3 py-3">${exam.courseCode}</td>
+                        <td class="px-3 py-3">${exam.section}</td>
+                        <td class="px-3 py-3">${exam.classroom}</td>
+                    `;
+
+                    scheduleBody.appendChild(row);
+
+                    // Sort the table after adding new entry
+                    sortScheduleTable();
+                }
+            });
+        }
+
         function addCourseFromInput(index) {
             const courseInput = document.querySelectorAll('.course-code')[index];
             const sectionInput = document.querySelectorAll('.section')[index];
             const courseCode = courseInput.value.trim().toUpperCase();
             const section = sectionInput.value.trim();
 
-            console.log(`Trying to add course: ${courseCode} Section: ${section}`);
-
             if (courseCode && section) {
                 // Find matching exams in the JSON data
                 const matchingExams = examData.filter(exam =>
-                    exam.courseCode && exam.courseCode.toLowerCase() === courseCode.toLowerCase() &&
+                    exam.courseCode.toLowerCase() === courseCode.toLowerCase() &&
                     exam.section === section
                 );
-
-                console.log(`Found ${matchingExams.length} matching exams`);
 
                 if (matchingExams.length > 0) {
                     // Add matching exams to the schedule
@@ -830,23 +864,34 @@
             // Set up event listeners for the new course input
             newCourseInput.addEventListener('focus', () => showCourseDropdown(newCourseInput, rowIndex));
             newCourseInput.addEventListener('input', () => {
-                const debouncedShowCourseDropdown = debounce((input, index) => {
-                    showCourseDropdown(input, index);
-                }, 150);
-                debouncedShowCourseDropdown(newCourseInput, rowIndex);
+                showCourseDropdown(newCourseInput, rowIndex);
             });
 
             // Set up event listeners for the new section input
             newSectionInput.addEventListener('focus', () => showSectionDropdown(newSectionInput, rowIndex));
             newSectionInput.addEventListener('input', () => {
-                const debouncedShowSectionDropdown = debounce((input, index) => {
-                    showSectionDropdown(input, index);
-                }, 150);
-                debouncedShowSectionDropdown(newSectionInput, rowIndex);
+                showSectionDropdown(newSectionInput, rowIndex);
             });
 
             // Add event listener for the new add button
-            newAddButton.addEventListener('click', () => addCourseFromInput(rowIndex));
+            newAddButton.addEventListener('click', () => {
+                addCourseFromInput(rowIndex);
+            });
+
+            // Add event listeners for keyboard navigation
+            newCourseInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Tab' && !e.shiftKey) {
+                    e.preventDefault();
+                    newSectionInput.focus();
+                }
+            });
+
+            newSectionInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Tab' && !e.shiftKey) {
+                    e.preventDefault();
+                    newAddButton.focus();
+                }
+            });
         }
 
         function updateSectionOptions(index) {
