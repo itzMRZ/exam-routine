@@ -103,6 +103,10 @@ def convert_pdf_to_json(pdf_path, json_path):
         for page_num, page in enumerate(pdf.pages, 1):
             print(f"Processing page {page_num}...")
 
+            # Extract all text lines from the page (in reading order)
+            page_text = page.extract_text() or ""
+            text_lines = page_text.splitlines()
+
             # Extract tables from the current page
             tables = page.extract_tables()
 
@@ -113,12 +117,12 @@ def convert_pdf_to_json(pdf_path, json_path):
                     if not table:
                         continue
 
-                    # Skip header row on every page
-                    for row in table[1:]:  # Always skip first row
+                    for row in table:
+                        # Skip header row on every page
+                        if row == table[0]:
+                            continue
                         if not row or all(cell is None or (isinstance(cell, str) and cell.strip() == "") for cell in row):
                             continue
-
-                        # Skip if this looks like another header row
                         if is_header_row(row, global_headers):
                             continue
 
@@ -129,23 +133,60 @@ def convert_pdf_to_json(pdf_path, json_path):
                                 if value:
                                     entry[global_headers[i]] = value
 
+                        # Build the full row text as it appears in the PDF (concatenated, space-separated)
+                        row_text = ' '.join([clean_text(str(cell)) for cell in row if cell])
+                        entry["RowText"] = row_text
+
+                        # Get all words with positions from the page
+                        words = page.extract_words()
+                        matched_words = []
+                        # Try to match each cell value to a word in the page
+                        for cell in row:
+                            cell_text = clean_text(str(cell))
+                            if not cell_text:
+                                continue
+                            for word in words:
+                                if clean_text(word.get('text', '')) == cell_text and word not in matched_words:
+                                    matched_words.append(word)
+                                    break
+                        # Calculate bounding box for the row
+                        if matched_words:
+                            x0 = min(float(w['x0']) for w in matched_words)
+                            y0 = min(float(w['top']) for w in matched_words)
+                            x1 = max(float(w['x1']) for w in matched_words)
+                            y1 = max(float(w['bottom']) for w in matched_words)
+                            entry["BoundingBox"] = {"x0": x0, "y0": y0, "x1": x1, "y1": y1}
+
                         # Standardize date and time fields
                         if "Final Date" in entry:
                             entry["Final Date"] = standardize_date(entry["Final Date"])
-
                         if "Start Time" in entry:
                             entry["Start Time"] = standardize_time(entry["Start Time"])
-
                         if "End Time" in entry:
                             entry["End Time"] = standardize_time(entry["End Time"])
+                        if "Section" in entry:
+                            entry["Section"] = str(entry["Section"])
 
-                        # Only include valid entries and skip header rows that might have been picked up
-                        if is_valid_entry(entry) and entry.get("Course") != "Course":
+                        # Find the first matching line in the PDF text for this entry
+                        line_number_in_pdf = None
+                        for idx, line in enumerate(text_lines, 1):
+                            # Match Course and Section (and optionally more fields)
+                            if entry.get("Course") and entry.get("Section"):
+                                if entry["Course"] in line and entry["Section"] in line:
+                                    line_number_in_pdf = idx
+                                    break
+                        # Fallback if not found
+                        if line_number_in_pdf is None:
+                            line_number_in_pdf = -1
+
+                        entry["Page Number"] = page_num
+                        entry["Line Number"] = line_number_in_pdf
+
+                        if is_valid_entry(entry):
                             all_entries.append(entry)
-                            print(f"    Added entry: Course={entry.get('Course')}, Section={entry.get('Section')}")
+                            print(f"    Added entry: Course={entry.get('Course')}, Section={entry.get('Section')}, Page={page_num}, Line={line_number_in_pdf}")
                         else:
-                            missing = [field for field in ["Course", "Section", "Final Date"] if field not in entry or not entry[field]]
-                            print(f"    Skipping invalid entry, missing: {missing}")
+                            print(f"    Skipping invalid entry")
             else:
                 print(f"  No tables found on page {page_num}")
 
@@ -164,7 +205,11 @@ def convert_pdf_to_json(pdf_path, json_path):
                 "Start Time": "Exam start time (24-hour format)",
                 "End Time": "Exam end time (24-hour format)",
                 "Room.": "Examination room",
-                "Dept.": "Department offering the course"
+                "Dept.": "Department offering the course",
+                "Page Number": "Page number from which the entry was extracted",
+                "Line Number": "Line number from which the entry was extracted",
+                "RowText": "Full concatenated text of the row as it appears in the PDF",
+                "BoundingBox": "Coordinates of the row in the PDF (x0, y0, x1, y1)"
             }
         },
         "exams": all_entries

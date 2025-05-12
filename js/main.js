@@ -111,6 +111,21 @@ function setupEventListeners() {
         ui.takeScreenshot();
     });
 
+    // Cross-check button
+    document.getElementById('cross-check-btn').addEventListener('click', function() {
+        handleCrossCheck();
+    });    // Modal close button
+    document.getElementById('close-modal-btn').addEventListener('click', function() {
+        document.getElementById('cross-check-modal').classList.add('hidden');
+    });
+
+    // Close modal on click outside the content
+    document.getElementById('cross-check-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            document.getElementById('cross-check-modal').classList.add('hidden');
+        }
+    });
+
     // Add course buttons
     document.querySelectorAll('.add-course').forEach((button, index) => {
         button.addEventListener('click', function() {
@@ -138,6 +153,57 @@ function setupEventListeners() {
 }
 
 /**
+ * Handle the cross-check functionality
+ */
+function handleCrossCheck() {
+    // Get all current exams from the table
+    const scheduleBody = document.getElementById('schedule-body');
+    const rows = Array.from(scheduleBody.querySelectorAll('tr'));
+
+    if (rows.length === 0) {
+        ui.showToast('No exams to cross-check. Please add courses first.', 'error');
+        return;
+    }
+
+    // Show loading toast
+    ui.showToast('Preparing PDF viewer...', 'info');
+
+    // Extract exam information from the displayed table
+    const tableExams = rows.map(row => {
+        const courseCode = row.cells[2].textContent;
+        const section = row.cells[3].textContent;
+
+        // Find the exam in the full examData to get its page number
+        const matchingExams = data.findExams(courseCode, section);
+        const pageNumber = matchingExams.length > 0 ? matchingExams[0].pageNumber : -1;
+
+        return {
+            date: row.cells[0].textContent,
+            time: row.cells[1].textContent,
+            courseCode: courseCode,
+            section: section,
+            classroom: row.cells[4].textContent,
+            pageNumber: pageNumber
+        };
+    });    // Use the PDF viewer instead of trying to use pdfHelper
+    console.log('Opening cross-check modal with the PDF viewer');
+      // First try to use pdfHelper's enhanced function, then fall back to pdfViewer if needed
+    console.log('Opening cross-check modal with exams:', tableExams);
+
+    if (window.pdfHelper && typeof window.pdfHelper.enhancedCrossCheck === 'function') {
+        console.log('Using pdfHelper.enhancedCrossCheck');
+        window.pdfHelper.enhancedCrossCheck(tableExams);
+    } else if (window.pdfViewer && typeof window.pdfViewer.openCrossCheckModal === 'function') {
+        console.log('Using pdfViewer.openCrossCheckModal');
+        window.pdfViewer.openCrossCheckModal(tableExams);
+    } else {
+        // Fallback if neither function is available
+        ui.showToast('PDF viewer is not available. Please check your browser console for errors.', 'error');
+        console.error('PDF viewer is not available. Make sure pdf-helper.js and pdf-viewer.js are loaded correctly.');
+    }
+}
+
+/**
  * Initialize the application
  */
 function initialize() {
@@ -148,10 +214,22 @@ function initialize() {
     data.loadScheduleData().then(() => {
         // Initialize suggestions after data is loaded
         dropdown.initializeCourseSuggestions();
-    });
 
-    // Add event listeners
-    setupEventListeners();
+        // Pre-load PDF.js in the background for better user experience
+        if (!window.pdfjsLib) {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
+            script.onload = () => {
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+                    'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+                console.log('PDF.js preloaded successfully');
+            };
+            document.head.appendChild(script);
+        }
+    }).finally(() => {
+        // Add event listeners regardless of PDF.js initialization status
+        setupEventListeners();
+    });
 }
 
 // Initialize the application when the DOM is loaded
@@ -162,5 +240,6 @@ window.app = {
     initialize,
     addCourseFromInput,
     addMoreInputs,
-    setupEventListeners
+    setupEventListeners,
+    handleCrossCheck
 };

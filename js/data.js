@@ -45,14 +45,18 @@ function loadScheduleData() {
                     if (!courseSections[courseCode]) {
                         courseSections[courseCode] = new Set();
                     }
-                    courseSections[courseCode].add(section);
+                    courseSections[courseCode].add(section);                    // Log the Page Number for debugging
+                    if (courseCode === "STA301") {
+                        console.log(`Found STA301 with Page Number: ${exam["Page Number"]}`);
+                    }
 
                     return {
                         date: utils.formatDateFromJSON(exam[dateField]),
                         time: utils.convertTimeFromJSON(exam["Start Time"], exam["End Time"]),
                         courseCode: courseCode,
                         section: section,
-                        classroom: exam["Room."]
+                        classroom: exam["Room."],
+                        pageNumber: exam["Page Number"] || -1  // Add the page number from JSON
                     };
                 });
 
