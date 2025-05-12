@@ -295,8 +295,8 @@ function renderExamPage(pdfDocument, pageNum, exam, container) {
         // For mobile responsiveness, adjust scale based on screen width
         const maxWidth = window.innerWidth > 768 ? 800 : window.innerWidth - 60;
         const initialViewport = page.getViewport({ scale: 1.0 });
-        const scale = maxWidth / initialViewport.width;
-        const viewport = page.getViewport({ scale });
+        const scaleFactor = maxWidth / initialViewport.width;
+        const viewport = page.getViewport({ scale: scaleFactor });
 
         // Create exam container
         const examContainer = document.createElement('div');
@@ -338,7 +338,26 @@ function renderExamPage(pdfDocument, pageNum, exam, container) {
             viewport: viewport
         };
 
-        return page.render(renderContext).promise;
+        return page.render(renderContext).promise.then(() => {
+            // Highlight bounding box if provided
+            if (exam.boundingBox && typeof exam.boundingBox.x0 === 'number') {
+                const { x0, y0, x1, y1 } = exam.boundingBox;
+                // PDF user-space height
+                const pdfPageHeight = initialViewport.height;
+                // Adjust if Python coordinates used top-left origin
+                const pdfY0 = pdfPageHeight - y1; // invert y1
+                const pdfY1 = pdfPageHeight - y0; // invert y0
+                // Debug log raw and adjusted coords
+                console.log('Raw bbox:', [x0, y0, x1, y1], 'Adjusted bbox:', [x0, pdfY0, x1, pdfY1]);
+                // Convert to viewport rectangle
+                const [left, top, right, bottom] = viewport.convertToViewportRectangle([x0, pdfY0, x1, pdfY1]);
+                context.save();
+                context.lineWidth = 2;
+                context.strokeStyle = 'red';
+                context.strokeRect(left, top, right - left, bottom - top);
+                context.restore();
+            }
+        });
     });
 }
 

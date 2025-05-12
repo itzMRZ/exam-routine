@@ -56,7 +56,8 @@ function loadScheduleData() {
                         courseCode: courseCode,
                         section: section,
                         classroom: exam["Room."],
-                        pageNumber: exam["Page Number"] || -1  // Add the page number from JSON
+                        pageNumber: exam["Page Number"] || -1,  // Add the page number from JSON
+                        boundingBox: exam["BoundingBox"] || null  // Add bounding box from JSON
                     };
                 });
 

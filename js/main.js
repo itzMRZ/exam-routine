@@ -176,6 +176,7 @@ function handleCrossCheck() {
         // Find the exam in the full examData to get its page number
         const matchingExams = data.findExams(courseCode, section);
         const pageNumber = matchingExams.length > 0 ? matchingExams[0].pageNumber : -1;
+        const boundingBox = matchingExams.length > 0 ? matchingExams[0].boundingBox : null;
 
         return {
             date: row.cells[0].textContent,
@@ -183,7 +184,8 @@ function handleCrossCheck() {
             courseCode: courseCode,
             section: section,
             classroom: row.cells[4].textContent,
-            pageNumber: pageNumber
+            pageNumber: pageNumber,
+            boundingBox: boundingBox
         };
     });    // Use the PDF viewer instead of trying to use pdfHelper
     console.log('Opening cross-check modal with the PDF viewer');
