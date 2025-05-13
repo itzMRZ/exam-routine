@@ -239,13 +239,52 @@ body {
 
 /* PDF Fullscreen Modal */
 #pdf-fullscreen-modal {
-    opacity: 0;
-    animation: fadeIn 0.3s forwards;
+    /* Remove opacity/animation for instant open */
+    opacity: 1 !important;
+    animation: none !important;
 }
 
 #pdf-fullscreen-img {
-    transition: transform 0.2s ease;
+    transition: transform 0.2s cubic-bezier(0.4,0,0.2,1);
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Reset zoom button styling */
+#reset-zoom-btn {
+    background: rgba(59,130,246,0.8);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    z-index: 2001;
+    font-size: 1rem;
+    transition: background 0.2s;
+}
+#reset-zoom-btn:hover {
+    background: rgba(37,99,235,0.95);
+}
+
+/* Responsive modal for mobile */
+@media (max-width: 640px) {
+    #pdf-fullscreen-modal div {
+        width: 95% !important;
+        height: 80% !important;
+        padding: 10px !important;
+    }
+    #pdf-fullscreen-img {
+        max-width: 100%;
+        max-height: 80%;
+    }
+    #reset-zoom-btn {
+        padding: 10px 16px;
+        font-size: 16px;
+    }
 }
 
 /* Mobile optimizations for modals */
