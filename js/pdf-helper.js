@@ -295,7 +295,8 @@ function renderExamPage(pdfDocument, pageNum, exam, container) {
         // For mobile responsiveness, adjust scale based on screen width
         const maxWidth = window.innerWidth > 768 ? 800 : window.innerWidth - 60;
         const initialViewport = page.getViewport({ scale: 1.0 });
-        const scaleFactor = maxWidth / initialViewport.width;
+        const dpr = window.devicePixelRatio || 1;
+        const scaleFactor = (maxWidth / initialViewport.width) * dpr;
         const viewport = page.getViewport({ scale: scaleFactor });
 
         // Create exam container
@@ -319,10 +320,10 @@ function renderExamPage(pdfDocument, pageNum, exam, container) {
         // Create canvas for PDF rendering
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
-        canvas.height = viewport.height;
         canvas.width = viewport.width;
-        canvas.style.width = '100%';
-        canvas.style.height = 'auto';
+        canvas.height = viewport.height;
+        canvas.style.width = (viewport.width / dpr) + 'px';
+        canvas.style.height = (viewport.height / dpr) + 'px';
         canvas.id = `pdf-canvas-${pageNum}-${exam.courseCode}-${exam.section}`;
 
         // Add canvas to container

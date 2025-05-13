@@ -56,3 +56,5 @@ Note: The application will automatically find and display the correct pages for 
   - The PDF viewer will show the first few pages if a specific page number isn't found
   - Check that the course code and section are entered exactly as they appear in the data file
   - Try refreshing the page or clearing your browser cache
+  - **If PDF images look blurry or low-resolution:**
+    The application now renders PDF pages at your device's full pixel density for sharper images. If you still see blurry images, try clicking "View Full Screen" on a PDF page for a higher-resolution view. On some devices, browser zoom or display scaling may affect clarity.

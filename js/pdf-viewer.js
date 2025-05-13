@@ -173,17 +173,20 @@ function tryLoadingPdf(urls, index, exams, container, loadingElement) {
             return pdfDocument.getPage(pageNum).then(function(page) {
                 // For mobile responsiveness, adjust scale based on screen width
                 const maxWidth = window.innerWidth > 768 ? 800 : window.innerWidth - 60;
-                const viewport = page.getViewport({ scale: 1.0 });
-                const scale = maxWidth / viewport.width;
+                const baseScale = maxWidth / page.getViewport({ scale: 1.0 }).width;
+                // Use devicePixelRatio for crisp rendering
+                const dpr = window.devicePixelRatio || 1;
+                const scale = baseScale * dpr;
                 const scaledViewport = page.getViewport({ scale });
 
                 // Create canvas for this page
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext('2d');
-                canvas.height = scaledViewport.height;
                 canvas.width = scaledViewport.width;
-                canvas.style.width = '100%';
-                canvas.style.height = 'auto';
+                canvas.height = scaledViewport.height;
+                // Set CSS size to logical pixels for responsive display
+                canvas.style.width = (scaledViewport.width / dpr) + 'px';
+                canvas.style.height = (scaledViewport.height / dpr) + 'px';
 
                 // Create a container for this exam's info and page
                 const examContainer = document.createElement('div');
