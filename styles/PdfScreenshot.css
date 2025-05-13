@@ -1,0 +1,22 @@
+.pdf-screenshot-container {
+  position: relative;
+  width: 100%;
+}
+
+.fullscreen-button-container {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.fullscreen-button {
+  padding: 8px 16px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.fullscreen-button:hover {
+  background-color: #e0e0e0;
+}

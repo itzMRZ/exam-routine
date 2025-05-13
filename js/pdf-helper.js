@@ -323,12 +323,23 @@ function renderExamPage(pdfDocument, pageNum, exam, container) {
         canvas.width = viewport.width;
         canvas.style.width = '100%';
         canvas.style.height = 'auto';
+        canvas.id = `pdf-canvas-${pageNum}-${exam.courseCode}-${exam.section}`;
 
         // Add canvas to container
         const canvasContainer = document.createElement('div');
         canvasContainer.className = 'overflow-x-auto';
         canvasContainer.appendChild(canvas);
         examContainer.appendChild(canvasContainer);
+
+        // Add full screen button
+        const fullScreenButton = document.createElement('button');
+        fullScreenButton.className = 'mt-3 px-3 py-1.5 bg-blue-500 text-white text-sm rounded flex items-center justify-center mx-auto hover:bg-blue-600 transition';
+        fullScreenButton.innerHTML = '<i class="fas fa-expand-arrows-alt mr-1"></i> View Full Screen';
+        fullScreenButton.onclick = (e) => {
+            e.stopPropagation();
+            openFullScreenModal(canvas.toDataURL('image/png'));
+        };
+        examContainer.appendChild(fullScreenButton);
 
         container.appendChild(examContainer);
 
@@ -361,6 +372,150 @@ function renderExamPage(pdfDocument, pageNum, exam, container) {
     });
 }
 
+/**
+ * Open a full screen modal with the given image URL
+ * @param {string} imageUrl - The image URL to display
+ */
+function openFullScreenModal(imageUrl) {
+    // Get the modal or create it if it doesn't exist
+    let modal = document.getElementById('pdf-fullscreen-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'pdf-fullscreen-modal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.9);z-index:2000;display:flex;align-items:center;justify-content:center;';
+        document.body.appendChild(modal);
+    }
+
+    // Set up modal content with improved spacing
+    modal.innerHTML = `
+        <div style="position:relative;width:85%;height:85%;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:15px;border:2px solid rgba(255,255,255,0.15);border-radius:12px;background:rgba(0,0,0,0.3);">
+            <img id="pdf-fullscreen-img" src="${imageUrl}" alt="Full Screen PDF Image"
+                style="max-width:100%;max-height:100%;border-radius:8px;background:#fff;transform-origin:center;touch-action:none;" />
+        </div>
+        <button id="close-fullscreen-btn"
+            style="position:absolute;top:20px;right:20px;font-size:24px;background:rgba(0,0,0,0.7);color:#fff;border:none;border-radius:4px;padding:8px 16px;cursor:pointer;z-index:2001;">
+            Close
+        </button>
+    `;
+
+    // Show the modal
+    modal.style.display = 'flex';
+
+    // Setup zoom and pan functionality
+    setupZoomPan(modal);
+
+    // Close button functionality
+    document.getElementById('close-fullscreen-btn').addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+
+    // Close on background click
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+}
+
+/**
+ * Setup zoom and pan functionality for the full screen modal
+ * @param {HTMLElement} modal - The modal element
+ */
+function setupZoomPan(modal) {
+    const img = modal.querySelector('#pdf-fullscreen-img');
+    let scale = 1;
+    let lastDist = 0;
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let translateX = 0, translateY = 0;
+
+    // Mouse wheel zoom
+    modal.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        scale = Math.max(1, scale + delta);
+        updateTransform();
+    });
+
+    // Touch zoom (pinch)
+    modal.addEventListener('touchstart', function(e) {
+        if (e.touches.length === 2) {
+            lastDist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+        } else if (e.touches.length === 1) {
+            isDragging = true;
+            startX = e.touches[0].clientX - translateX;
+            startY = e.touches[0].clientY - translateY;
+        }
+    });
+
+    modal.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        if (e.touches.length === 2) {
+            // Pinch to zoom
+            const dist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+
+            if (lastDist > 0) {
+                scale = Math.max(1, scale * (dist / lastDist));
+                updateTransform();
+            }
+            lastDist = dist;
+        } else if (e.touches.length === 1 && isDragging && scale > 1) {
+            // Pan when zoomed in
+            translateX = e.touches[0].clientX - startX;
+            translateY = e.touches[0].clientY - startY;
+            updateTransform();
+        }
+    });
+
+    modal.addEventListener('touchend', function() {
+        lastDist = 0;
+        isDragging = false;
+    });
+
+    // Mouse drag for panning
+    img.addEventListener('mousedown', function(e) {
+        if (scale > 1) {
+            isDragging = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+        }
+    });
+
+    modal.addEventListener('mousemove', function(e) {
+        if (isDragging && scale > 1) {
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            updateTransform();
+        }
+    });
+
+    modal.addEventListener('mouseup', function() {
+        isDragging = false;
+    });
+
+    modal.addEventListener('mouseleave', function() {
+        isDragging = false;
+    });
+
+    // Double click to reset zoom
+    img.addEventListener('dblclick', function() {
+        scale = 1;
+        translateX = 0;
+        translateY = 0;
+        updateTransform();
+    });
+
+    function updateTransform() {
+        img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+    }
+}
+
 // Export PDF helper functions
 window.pdfHelper = {
     arrayBufferToBase64,
@@ -369,5 +524,7 @@ window.pdfHelper = {
     enhancedCrossCheck,
     renderPdfWithExams,
     renderExamPage,
-    findPagesForExams
+    findPagesForExams,
+    openFullScreenModal,
+    setupZoomPan
 };

@@ -158,7 +158,6 @@ function takeScreenshot() {
 
         th.appendChild(contentDiv);
         th.style.verticalAlign = 'middle';
-        th.style.verticalAlign = 'middle';
         th.style.textAlign = 'center';
 
         headerRow.appendChild(th);
@@ -206,19 +205,47 @@ function takeScreenshot() {
     tempContainer.style.left = '-9999px';
     document.body.appendChild(tempContainer);
 
-    // Take screenshot of the temporary element
+    // Take high-quality screenshot of the temporary element
     html2canvas(tempContainer, {
         backgroundColor: 'rgba(0, 0, 0, 0.9)',
         logging: false,
-        scale: 2, // Higher resolution
+        scale: 4, // Higher resolution for better quality
         useCORS: true,
         allowTaint: true
     }).then(canvas => {
+        // Store the high-quality screenshot in a global variable for later use
+        window.highQualityScreenshot = canvas.toDataURL('image/png');
+
         // Create download link
         const link = document.createElement('a');
         link.download = 'Spring25-Exam-Schedule.png';
-        link.href = canvas.toDataURL('image/png');
+        link.href = window.highQualityScreenshot;
         link.click();
+
+        // Create container for the view button
+        const viewButtonContainer = document.createElement('div');
+        viewButtonContainer.className = 'mt-4 text-center';
+
+        // Create "View Full Screen" button
+        const viewButton = document.createElement('button');
+        viewButton.className = 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition';
+        viewButton.textContent = 'View Full Screen';
+        viewButton.onclick = () => openScreenshotModal(window.highQualityScreenshot);
+
+        viewButtonContainer.appendChild(viewButton);
+
+        // Insert the view button after the screenshot button
+        const screenshotBtn = document.getElementById('screenshot-btn');
+        if (screenshotBtn && screenshotBtn.parentNode) {
+            screenshotBtn.parentNode.insertBefore(viewButtonContainer, screenshotBtn.nextSibling);
+
+            // Auto-remove after 30 seconds
+            setTimeout(() => {
+                if (viewButtonContainer.parentNode) {
+                    viewButtonContainer.parentNode.removeChild(viewButtonContainer);
+                }
+            }, 30000);
+        }
 
         // Clean up
         document.body.removeChild(tempContainer);
@@ -232,11 +259,104 @@ function takeScreenshot() {
     });
 }
 
+/**
+ * Opens a modal with the high-quality screenshot
+ * @param {string} imageUrl - URL of the high-quality screenshot
+ */
+function openScreenshotModal(imageUrl) {
+    // Create or get modal container
+    let modal = document.getElementById('screenshot-fullscreen-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'screenshot-fullscreen-modal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);z-index:2000;display:flex;flex-direction:column;align-items:center;justify-content:center;';
+        document.body.appendChild(modal);
+    } else {
+        modal.style.display = 'flex';
+    }
+
+    // Clear previous content
+    modal.innerHTML = '';
+
+    // Create container for the image with improved spacing
+    const imgContainer = document.createElement('div');
+    imgContainer.style.cssText = 'position:relative;width:85%;height:85%;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:10px;border:2px solid rgba(255,255,255,0.15);border-radius:12px;background:rgba(0,0,0,0.3);';
+
+    // Create the image element
+    const img = document.createElement('img');
+    img.id = 'screenshot-fullscreen-img';
+    img.src = imageUrl;
+    img.alt = 'Full Screen Schedule';
+    img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;transform-origin:center;';
+
+    // Add controls for zoom
+    const controlsContainer = document.createElement('div');
+    controlsContainer.style.cssText = 'position:absolute;bottom:20px;left:0;right:0;display:flex;justify-content:center;gap:10px;';
+
+    const zoomInBtn = document.createElement('button');
+    zoomInBtn.textContent = 'Zoom In';
+    zoomInBtn.style.cssText = 'background:rgba(59, 130, 246, 0.7);color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;';
+
+    const zoomOutBtn = document.createElement('button');
+    zoomOutBtn.textContent = 'Zoom Out';
+    zoomOutBtn.style.cssText = 'background:rgba(59, 130, 246, 0.7);color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;';
+
+    const resetBtn = document.createElement('button');
+    resetBtn.textContent = 'Reset';
+    resetBtn.style.cssText = 'background:rgba(59, 130, 246, 0.7);color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;';
+
+    // Close button
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = 'Close';
+    closeBtn.style.cssText = 'position:absolute;top:20px;right:20px;background:rgba(239, 68, 68, 0.7);color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;';
+
+    // Add elements to DOM
+    imgContainer.appendChild(img);
+    controlsContainer.appendChild(zoomInBtn);
+    controlsContainer.appendChild(zoomOutBtn);
+    controlsContainer.appendChild(resetBtn);
+    modal.appendChild(imgContainer);
+    modal.appendChild(controlsContainer);
+    modal.appendChild(closeBtn);
+
+    // Current scale value
+    let scale = 1;
+
+    // Event handlers for zoom controls
+    zoomInBtn.addEventListener('click', () => {
+        scale += 0.25;
+        img.style.transform = `scale(${scale})`;
+    });
+
+    zoomOutBtn.addEventListener('click', () => {
+        if (scale > 0.5) scale -= 0.25;
+        img.style.transform = `scale(${scale})`;
+    });
+
+    resetBtn.addEventListener('click', () => {
+        scale = 1;
+        img.style.transform = 'scale(1)';
+    });
+
+    // Close modal
+    closeBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    // Close on background click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+}
+
 // Export UI functions
 window.ui = {
     showToast,
     updateTitle,
     addExamsToSchedule,
     sortScheduleTable,
-    takeScreenshot
+    takeScreenshot,
+    openScreenshotModal
 };

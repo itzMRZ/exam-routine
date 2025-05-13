@@ -168,6 +168,105 @@ body {
 }
 
 /* Ensure screenshot button has space above the footer */
-#screenshot-btn {
-    margin-bottom: 80px; /* Increased margin */
+#screenshot-btn, #cross-check-btn {
+    margin-bottom: 30px; /* Reduced margin to fix extra space */
+}
+
+/* Screenshot Fullscreen Modal */
+#screenshot-fullscreen-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.95);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    animation: fadeIn 0.3s forwards;
+}
+
+#screenshot-fullscreen-img {
+    max-width: 95%;
+    max-height: 95%;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+
+/* View Screenshot button styling */
+.mt-4.text-center {
+    margin-top: 1rem;
+    text-align: center;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Mobile optimizations for screenshot */
+@media (max-width: 640px) {
+    #screenshot-fullscreen-modal button {
+        padding: 10px 16px;
+        font-size: 16px;
+    }
+
+    #screenshot-fullscreen-img {
+        max-width: 100%;
+        max-height: 80%;
+    }
+}
+
+/* Ensure screenshot button has space above the footer */
+#screenshot-btn, #cross-check-btn {
+    margin-bottom: 30px; /* Reduced margin to fix extra space */
+}
+
+/* PDF Fullscreen Modal */
+#pdf-fullscreen-modal {
+    opacity: 0;
+    animation: fadeIn 0.3s forwards;
+}
+
+#pdf-fullscreen-img {
+    transition: transform 0.2s ease;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Mobile optimizations for modals */
+@media (max-width: 640px) {
+    #screenshot-fullscreen-modal div,
+    #pdf-fullscreen-modal div {
+        width: 90% !important;
+        height: 80% !important;
+        padding: 10px !important;
+    }
+}
+
+/* Mobile optimizations for PDF viewing */
+@media (max-width: 640px) {
+    /* Fix extra space before cross-check button on mobile */
+    .flex.flex-wrap.gap-3 {
+        gap: 0.5rem !important;
+    }
+
+    #cross-check-btn {
+        margin-top: 0.75rem;
+        margin-bottom: 2rem;
+    }
 }
