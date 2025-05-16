@@ -327,20 +327,9 @@ function renderExamPage(pdfDocument, pageNum, exam, container) {
         canvas.id = `pdf-canvas-${pageNum}-${exam.courseCode}-${exam.section}`;
 
         // Add canvas to container
-        const canvasContainer = document.createElement('div');
-        canvasContainer.className = 'overflow-x-auto';
+        const canvasContainer = document.createElement('div');        canvasContainer.className = 'overflow-x-auto';
         canvasContainer.appendChild(canvas);
         examContainer.appendChild(canvasContainer);
-
-        // Add full screen button
-        const fullScreenButton = document.createElement('button');
-        fullScreenButton.className = 'mt-3 px-3 py-1.5 bg-blue-500 text-white text-sm rounded flex items-center justify-center mx-auto hover:bg-blue-600 transition';
-        fullScreenButton.innerHTML = '<i class="fas fa-expand-arrows-alt mr-1"></i> View Full Screen';
-        fullScreenButton.onclick = (e) => {
-            e.stopPropagation();
-            openFullScreenModal(canvas.toDataURL('image/png'));
-        };
-        examContainer.appendChild(fullScreenButton);
 
         container.appendChild(examContainer);
 

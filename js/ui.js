@@ -203,9 +203,7 @@ function takeScreenshot() {
     // Temporarily add to document but hide it
     tempContainer.style.position = 'absolute';
     tempContainer.style.left = '-9999px';
-    document.body.appendChild(tempContainer);
-
-    // Take high-quality screenshot of the temporary element
+    document.body.appendChild(tempContainer);    // Take high-quality screenshot of the temporary element
     html2canvas(tempContainer, {
         backgroundColor: 'rgba(0, 0, 0, 0.9)',
         logging: false,
@@ -215,37 +213,11 @@ function takeScreenshot() {
     }).then(canvas => {
         // Store the high-quality screenshot in a global variable for later use
         window.highQualityScreenshot = canvas.toDataURL('image/png');
-
         // Create download link
         const link = document.createElement('a');
         link.download = 'Spring25-Exam-Schedule.png';
         link.href = window.highQualityScreenshot;
         link.click();
-
-        // Create container for the view button
-        const viewButtonContainer = document.createElement('div');
-        viewButtonContainer.className = 'mt-4 text-center';
-
-        // Create "View Full Screen" button
-        const viewButton = document.createElement('button');
-        viewButton.className = 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition';
-        viewButton.textContent = 'View Full Screen';
-        viewButton.onclick = () => openScreenshotModal(window.highQualityScreenshot);
-
-        viewButtonContainer.appendChild(viewButton);
-
-        // Insert the view button after the screenshot button
-        const screenshotBtn = document.getElementById('screenshot-btn');
-        if (screenshotBtn && screenshotBtn.parentNode) {
-            screenshotBtn.parentNode.insertBefore(viewButtonContainer, screenshotBtn.nextSibling);
-
-            // Auto-remove after 30 seconds
-            setTimeout(() => {
-                if (viewButtonContainer.parentNode) {
-                    viewButtonContainer.parentNode.removeChild(viewButtonContainer);
-                }
-            }, 30000);
-        }
 
         // Clean up
         document.body.removeChild(tempContainer);

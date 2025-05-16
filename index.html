@@ -204,9 +204,8 @@
     /* Create proper spacing for the content area */
     #capture-area {
         margin-bottom: 50px; /* Increased margin */
-    }    /* Ensure screenshot button has space above the footer */
-    #screenshot-btn, #cross-check-btn {
-        margin-bottom: 80px; /* Increased margin */
+    }    /* Ensure screenshot button has space above the footer */    #screenshot-btn, #cross-check-btn {
+        margin-bottom: 5px; /* Consistent with CSS file */
     }
 
     /* Modal styles */
@@ -297,13 +296,11 @@
                 </tbody>
             </table>
         </div>
-    </div>
-
-    <div class="flex flex-wrap gap-3 justify-center">
-        <button id="screenshot-btn" class="bg-yellow-300 text-gray-800 p-3 rounded mt-6 w-full max-w-xs sm:w-auto sm:px-6 flex items-center justify-center hover:bg-yellow-400 transition">
+    </div>    <div class="flex flex-wrap gap-3 justify-center">
+        <button id="screenshot-btn" class="bg-yellow-300 text-gray-800 p-3 rounded mt-4 w-full max-w-xs sm:w-auto sm:px-6 flex items-center justify-center hover:bg-yellow-400 transition">
             <i class="fas fa-camera mr-2"></i>Screenshot
         </button>
-        <button id="cross-check-btn" class="bg-blue-500 text-white p-3 rounded mt-6 w-full max-w-xs sm:w-auto sm:px-6 flex items-center justify-center hover:bg-blue-600 transition">
+        <button id="cross-check-btn" class="bg-blue-500 text-white p-3 rounded mt-2 sm:mt-4 w-full max-w-xs sm:w-auto sm:px-6 flex items-center justify-center hover:bg-blue-600 transition">
             <i class="fas fa-file-pdf mr-2"></i>Cross Check
         </button>
     </div>

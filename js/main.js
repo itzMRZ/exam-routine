@@ -109,12 +109,12 @@ function setupEventListeners() {
     // Screenshot button
     document.getElementById('screenshot-btn').addEventListener('click', function() {
         ui.takeScreenshot();
-    });
-
-    // Cross-check button
+    });    // Cross-check button
     document.getElementById('cross-check-btn').addEventListener('click', function() {
         handleCrossCheck();
-    });    // Modal close button
+    });
+
+    // Modal close button
     document.getElementById('close-modal-btn').addEventListener('click', function() {
         document.getElementById('cross-check-modal').classList.add('hidden');
     });
@@ -183,13 +183,13 @@ function handleCrossCheck() {
             time: row.cells[1].textContent,
             courseCode: courseCode,
             section: section,
-            classroom: row.cells[4].textContent,
-            pageNumber: pageNumber,
+            classroom: row.cells[4].textContent,            pageNumber: pageNumber,
             boundingBox: boundingBox
         };
-    });    // Use the PDF viewer instead of trying to use pdfHelper
+    });
+      // Use the PDF viewer instead of trying to use pdfHelper
     console.log('Opening cross-check modal with the PDF viewer');
-      // First try to use pdfHelper's enhanced function, then fall back to pdfViewer if needed
+    // First try to use pdfHelper's enhanced function, then fall back to pdfViewer if needed
     console.log('Opening cross-check modal with exams:', tableExams);
 
     if (window.pdfHelper && typeof window.pdfHelper.enhancedCrossCheck === 'function') {

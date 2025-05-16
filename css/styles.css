@@ -301,11 +301,13 @@ body {
 @media (max-width: 640px) {
     /* Fix extra space before cross-check button on mobile */
     .flex.flex-wrap.gap-3 {
-        gap: 0.5rem !important;
+        gap: 0.25rem !important;
     }
 
-    #cross-check-btn {
-        margin-top: 0.75rem;
-        margin-bottom: 2rem;
+    #screenshot-btn, #cross-check-btn {
+        margin-top: 0.5rem;
+        margin-bottom: 1.5rem;
+        width: 100%;
+        max-width: 300px;
     }
 }
