@@ -241,10 +241,15 @@
 </style>
 </head>
 <body class="bg-black text-white flex flex-col items-center justify-center min-h-screen p-4 sm:p-6" style="background-image: url('https://i.postimg.cc/yWq3K43q/4d4883bf150f7162cc97c2c822f7cb24.jpg'); background-size: cover; background-attachment: fixed;">
-    <div id="toast-container" class="toast-container"></div>
-
-    <div id="capture-area" class="flex flex-col items-center w-full max-w-4xl">
-        <h1 class="text-3xl font-bold mb-6 text-center">SPRING-25 MIDTERM SCHEDULE</h1>
+    <div id="toast-container" class="toast-container"></div>    <div id="capture-area" class="flex flex-col items-center w-full max-w-4xl">
+        <h1 class="text-3xl font-bold mb-3 text-center">SPRING-25 MIDTERM SCHEDULE</h1>        <!-- Note with styled button -->
+        <div class="flex items-center justify-center mb-6 text-yellow-200 text-sm">
+            <span>Note: Do not forget to click</span>
+            <span class="bg-yellow-300 text-gray-800 px-1 py-0.5 rounded mx-1 inline-flex items-center" style="font-size: 0.7rem;">
+                <i class="fas fa-plus" style="font-size: 0.6rem; margin-right: 1px;"></i>ADD
+            </span>
+            <span>after each entry</span>
+        </div>
 
         <!-- Modified structure for mobile layout -->
         <div id="course-inputs" class="w-full mb-4">
@@ -334,13 +339,12 @@
             window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
             console.log('PDF.js initialized with worker');
         }
-    </script>
-
-    <!-- JavaScript modules -->
-    <script src="js/utils.js"></script>
+    </script>    <!-- JavaScript modules -->    <script src="js/utils.js"></script>
+    <script src="js/pdf-screenshot-helper.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/data.js"></script>
     <script src="js/dropdown.js"></script>
+    <script src="js/pdf-debug.js"></script>
     <script src="js/pdf-helper.js"></script>
     <script src="js/pdf-viewer.js"></script>
     <script src="js/main.js"></script></body>

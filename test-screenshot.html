@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Screenshot Functionality</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .toast {
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            animation: fadeInOut 5s forwards;
+        }
+        .success { background-color: #4CAF50; }
+        .error { background-color: #F44336; }
+        .info { background-color: #2196F3; }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    <div class="container mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-center">TEST SCREENSHOT FUNCTIONALITY</h1>
+
+        <div class="bg-opacity-30 bg-blue-900 p-4 rounded mb-6">
+            <p>This page tests the screenshot functionality without any cropping. Click the button below to generate a screenshot of the sample data.</p>
+        </div>
+
+        <!-- Sample Exam Table -->
+        <div class="w-full overflow-x-auto mb-8">
+            <table class="min-w-full bg-black border border-white text-center">
+                <thead>
+                    <tr class="border-b border-white">
+                        <th class="text-center">Date</th>
+                        <th class="text-center">Time</th>
+                        <th class="text-center">Course</th>
+                        <th class="text-center">Section</th>
+                        <th class="text-center">Classroom</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-white">
+                        <td>May 20, 2025</td>
+                        <td>9:00 AM - 11:00 AM</td>
+                        <td>CSE101</td>
+                        <td>A</td>
+                        <td>UB80101</td>
+                    </tr>
+                    <tr class="border-b border-white">
+                        <td>May 21, 2025</td>
+                        <td>2:00 PM - 4:00 PM</td>
+                        <td>CSE220</td>
+                        <td>B</td>
+                        <td>UB80303</td>
+                    </tr>
+                    <tr class="border-b border-white">
+                        <td>May 24, 2025</td>
+                        <td>11:00 AM - 1:00 PM</td>
+                        <td>CSE330</td>
+                        <td>C</td>
+                        <td>UB80505</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bg-opacity-30 bg-blue-900 p-4 rounded mb-6">
+            <h2 class="text-xl font-bold mb-4">Screenshot Settings</h2>
+
+            <div class="mb-4">
+                <h3 class="font-semibold mb-2">Cell Padding:</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div>
+                        <label for="cell-padding-top" class="block mb-1">Top:</label>
+                        <div class="flex items-center">
+                            <input type="range" id="cell-padding-top" min="0" max="20" value="5" class="w-full mr-2">
+                            <span id="cell-padding-top-value">5px</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="cell-padding-right" class="block mb-1">Right:</label>
+                        <div class="flex items-center">
+                            <input type="range" id="cell-padding-right" min="0" max="20" value="5" class="w-full mr-2">
+                            <span id="cell-padding-right-value">5px</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="cell-padding-bottom" class="block mb-1">Bottom:</label>
+                        <div class="flex items-center">
+                            <input type="range" id="cell-padding-bottom" min="0" max="20" value="5" class="w-full mr-2">
+                            <span id="cell-padding-bottom-value">5px</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="cell-padding-left" class="block mb-1">Left:</label>
+                        <div class="flex items-center">
+                            <input type="range" id="cell-padding-left" min="0" max="20" value="5" class="w-full mr-2">
+                            <span id="cell-padding-left-value">5px</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h3 class="font-semibold mb-2">Header Padding:</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div>
+                        <label for="header-padding-top" class="block mb-1">Top:</label>
+                        <div class="flex items-center">
+                            <input type="range" id="header-padding-top" min="0" max="20" value="5" class="w-full mr-2">
+                            <span id="header-padding-top-value">5px</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="header-padding-right" class="block mb-1">Right:</label>
+                        <div class="flex items-center">
+                            <input type="range" id="header-padding-right" min="0" max="20" value="5" class="w-full mr-2">
+                            <span id="header-padding-right-value">5px</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="header-padding-bottom" class="block mb-1">Bottom:</label>
+                        <div class="flex items-center">
+                            <input type="range" id="header-padding-bottom" min="0" max="20" value="5" class="w-full mr-2">
+                            <span id="header-padding-bottom-value">5px</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="header-padding-left" class="block mb-1">Left:</label>
+                        <div class="flex items-center">
+                            <input type="range" id="header-padding-left" min="0" max="20" value="5" class="w-full mr-2">
+                            <span id="header-padding-left-value">5px</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label for="scale" class="block mb-2">Screenshot Quality (Scale):</label>
+                <div class="flex items-center">
+                    <input type="range" id="scale" min="1" max="4" step="1" value="3" class="w-full mr-2">
+                    <span id="scale-value">3x</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-center">
+            <button id="screenshot-btn" class="bg-yellow-300 text-gray-800 p-3 rounded mt-4 flex items-center justify-center hover:bg-yellow-400 transition">
+                <i class="fas fa-camera mr-2"></i>Take Screenshot
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.getElementById('toast-container').appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+
+        // Screenshot functionality
+        function takeScreenshot(options = {}) {            // Default options for screenshot
+            const defaultOptions = {
+                cellPaddingTop: '1px',
+                cellPaddingRight: '5px',
+                cellPaddingBottom: '8px',
+                cellPaddingLeft: '5px',
+                headerPaddingTop: '5px',
+                headerPaddingRight: '5px',
+                headerPaddingBottom: '5px',
+                headerPaddingLeft: '5px',
+                scale: 4  // Default 3x scale for high quality
+            };
+
+            // Merge default options with provided options
+            const screenshotOptions = {...defaultOptions, ...options};
+
+            showToast('Creating screenshot...', 'info');
+
+            // Create a temporary container
+            const tempContainer = document.createElement('div');
+            tempContainer.className = 'bg-black p-6 rounded';
+
+            // Set explicit width to match the original table's width
+            const originalTable = document.querySelector('table');
+            if (originalTable) {
+                const originalWidth = originalTable.offsetWidth;
+                tempContainer.style.width = originalWidth + 'px';
+            }
+
+            // Set overflow to visible to prevent cutting off content
+            tempContainer.style.overflow = 'visible';
+            tempContainer.style.marginBottom = '20px'; // Add extra margin at bottom
+
+            // Add the title
+            const title = document.createElement('h1');
+            title.className = 'text-2xl font-bold mb-6 text-white text-center';
+            title.textContent = document.querySelector('h1').textContent;
+            tempContainer.appendChild(title);            // Copy the table and adjust cell padding
+            const table = document.querySelector('table').cloneNode(true);
+            table.style.width = '100%';
+            table.style.color = 'white';
+
+            // Adjust header cell padding using content divs
+            const headerCells = table.querySelectorAll('th');
+            headerCells.forEach(cell => {
+                // Create a div inside the header cell for flexbox centering
+                const contentDiv = document.createElement('div');
+                contentDiv.style.display = 'flex';
+                contentDiv.style.justifyContent = 'center';
+                contentDiv.style.alignItems = 'center';
+                contentDiv.style.minHeight = '30px';
+                contentDiv.style.paddingTop = screenshotOptions.headerPaddingTop;
+                contentDiv.style.paddingRight = screenshotOptions.headerPaddingRight;
+                contentDiv.style.paddingBottom = screenshotOptions.headerPaddingBottom;
+                contentDiv.style.paddingLeft = screenshotOptions.headerPaddingLeft;
+                contentDiv.style.fontWeight = 'bold';
+                contentDiv.style.color = 'white';
+
+                // Move the cell content to the div
+                contentDiv.textContent = cell.textContent;
+                cell.textContent = '';
+                cell.appendChild(contentDiv);
+
+                // Set vertical alignment
+                cell.style.verticalAlign = 'middle';
+                cell.style.textAlign = 'center';
+            });
+
+            // Adjust body cell padding using content divs
+            const bodyCells = table.querySelectorAll('td');
+            bodyCells.forEach(cell => {
+                // Create a div inside the cell for flexbox centering
+                const contentDiv = document.createElement('div');
+                contentDiv.style.display = 'flex';
+                contentDiv.style.justifyContent = 'center';
+                contentDiv.style.alignItems = 'center';
+                contentDiv.style.minHeight = '30px';
+                contentDiv.style.paddingTop = screenshotOptions.cellPaddingTop;
+                contentDiv.style.paddingRight = screenshotOptions.cellPaddingRight;
+                contentDiv.style.paddingBottom = screenshotOptions.cellPaddingBottom;
+                contentDiv.style.paddingLeft = screenshotOptions.cellPaddingLeft;
+                contentDiv.style.color = 'white';
+
+                // Move the cell content to the div
+                contentDiv.textContent = cell.textContent;
+                cell.textContent = '';
+                cell.appendChild(contentDiv);
+
+                // Set vertical alignment
+                cell.style.verticalAlign = 'middle';
+                cell.style.textAlign = 'center';
+            });
+
+            tempContainer.appendChild(table);
+
+            // Temporarily add to document but hide it
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '-9999px';
+            document.body.appendChild(tempContainer);
+
+            // Add a small delay before capturing to ensure everything has rendered properly
+            setTimeout(() => {
+                // Explicitly set the height to include a bit of extra space
+                const computedHeight = tempContainer.scrollHeight + 20; // Add extra pixels at bottom
+
+                // Take screenshot
+                html2canvas(tempContainer, {
+                    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                    scale: screenshotOptions.scale, // Use configurable scale for quality
+                    useCORS: true,
+                    allowTaint: true,
+                    width: tempContainer.offsetWidth,
+                    height: computedHeight, // Use computed height with extra padding
+                    windowHeight: computedHeight + 50, // Ensure window height is sufficient
+                    onclone: function(clonedDoc) {
+                        // Make sure the clone has visible overflow
+                        const clonedContainer = clonedDoc.body.querySelector('div');
+                        if (clonedContainer) {
+                            clonedContainer.style.overflow = 'visible';
+                            clonedContainer.style.paddingBottom = '20px';
+                        }
+                    }
+                }).then(canvas => {
+                    // Create download link
+                    const link = document.createElement('a');
+                    link.download = 'Test-Screenshot.png';
+                    link.href = canvas.toDataURL('image/png');
+                    document.body.appendChild(link);
+                    link.click();
+
+                    // Clean up
+                    setTimeout(() => {
+                        document.body.removeChild(link);
+                        document.body.removeChild(tempContainer);
+                    }, 100);
+
+                    showToast('Screenshot saved!', 'success');
+                }).catch(error => {
+                    console.error('Screenshot error:', error);
+                    showToast('Error taking screenshot', 'error');
+                    document.body.removeChild(tempContainer);
+                });
+            }, 100); // Add a short delay to ensure DOM is fully rendered
+        }        // Add event listener for screenshot button
+        document.getElementById('screenshot-btn').addEventListener('click', function() {
+            // Get all padding values
+            const cellPaddingTop = document.getElementById('cell-padding-top').value + 'px';
+            const cellPaddingRight = document.getElementById('cell-padding-right').value + 'px';
+            const cellPaddingBottom = document.getElementById('cell-padding-bottom').value + 'px';
+            const cellPaddingLeft = document.getElementById('cell-padding-left').value + 'px';
+
+            const headerPaddingTop = document.getElementById('header-padding-top').value + 'px';
+            const headerPaddingRight = document.getElementById('header-padding-right').value + 'px';
+            const headerPaddingBottom = document.getElementById('header-padding-bottom').value + 'px';
+            const headerPaddingLeft = document.getElementById('header-padding-left').value + 'px';
+
+            const scale = parseInt(document.getElementById('scale').value);
+
+            // Call takeScreenshot with custom options
+            takeScreenshot({
+                cellPaddingTop: cellPaddingTop,
+                cellPaddingRight: cellPaddingRight,
+                cellPaddingBottom: cellPaddingBottom,
+                cellPaddingLeft: cellPaddingLeft,
+                headerPaddingTop: headerPaddingTop,
+                headerPaddingRight: headerPaddingRight,
+                headerPaddingBottom: headerPaddingBottom,
+                headerPaddingLeft: headerPaddingLeft,
+                scale: scale
+            });
+        });
+
+        // Add event listeners for cell padding sliders
+        document.getElementById('cell-padding-top').addEventListener('input', function(e) {
+            document.getElementById('cell-padding-top-value').textContent = e.target.value + 'px';
+            updateTablePreview();
+        });
+
+        document.getElementById('cell-padding-right').addEventListener('input', function(e) {
+            document.getElementById('cell-padding-right-value').textContent = e.target.value + 'px';
+            updateTablePreview();
+        });
+
+        document.getElementById('cell-padding-bottom').addEventListener('input', function(e) {
+            document.getElementById('cell-padding-bottom-value').textContent = e.target.value + 'px';
+            updateTablePreview();
+        });
+
+        document.getElementById('cell-padding-left').addEventListener('input', function(e) {
+            document.getElementById('cell-padding-left-value').textContent = e.target.value + 'px';
+            updateTablePreview();
+        });
+
+        // Add event listeners for header padding sliders
+        document.getElementById('header-padding-top').addEventListener('input', function(e) {
+            document.getElementById('header-padding-top-value').textContent = e.target.value + 'px';
+            updateTablePreview();
+        });
+
+        document.getElementById('header-padding-right').addEventListener('input', function(e) {
+            document.getElementById('header-padding-right-value').textContent = e.target.value + 'px';
+            updateTablePreview();
+        });
+
+        document.getElementById('header-padding-bottom').addEventListener('input', function(e) {
+            document.getElementById('header-padding-bottom-value').textContent = e.target.value + 'px';
+            updateTablePreview();
+        });
+
+        document.getElementById('header-padding-left').addEventListener('input', function(e) {
+            document.getElementById('header-padding-left-value').textContent = e.target.value + 'px';
+            updateTablePreview();
+        });
+
+        document.getElementById('scale').addEventListener('input', function(e) {
+            document.getElementById('scale-value').textContent = e.target.value + 'x';
+        });        // Function to update the table preview with current padding settings
+        function updateTablePreview() {
+            // Get all padding values
+            const cellPaddingTop = document.getElementById('cell-padding-top').value + 'px';
+            const cellPaddingRight = document.getElementById('cell-padding-right').value + 'px';
+            const cellPaddingBottom = document.getElementById('cell-padding-bottom').value + 'px';
+            const cellPaddingLeft = document.getElementById('cell-padding-left').value + 'px';
+
+            const headerPaddingTop = document.getElementById('header-padding-top').value + 'px';
+            const headerPaddingRight = document.getElementById('header-padding-right').value + 'px';
+            const headerPaddingBottom = document.getElementById('header-padding-bottom').value + 'px';
+            const headerPaddingLeft = document.getElementById('header-padding-left').value + 'px';
+
+            // Create or update content divs for all cells
+            document.querySelectorAll('th').forEach(th => {
+                // Find existing content div or create a new one
+                let contentDiv = th.querySelector('div');
+                if (!contentDiv) {
+                    // Create a new content div and move the text
+                    contentDiv = document.createElement('div');
+                    contentDiv.textContent = th.textContent;
+                    th.textContent = '';
+                    th.appendChild(contentDiv);
+
+                    // Initialize styles
+                    contentDiv.style.display = 'flex';
+                    contentDiv.style.justifyContent = 'center';
+                    contentDiv.style.alignItems = 'center';
+                    contentDiv.style.minHeight = '30px';
+                    contentDiv.style.fontWeight = 'bold';
+                    contentDiv.style.color = 'white';
+                }
+
+                // Apply padding to the content div
+                contentDiv.style.paddingTop = headerPaddingTop;
+                contentDiv.style.paddingRight = headerPaddingRight;
+                contentDiv.style.paddingBottom = headerPaddingBottom;
+                contentDiv.style.paddingLeft = headerPaddingLeft;
+            });
+
+            // Update data cells in the same way
+            document.querySelectorAll('td').forEach(td => {
+                // Find existing content div or create a new one
+                let contentDiv = td.querySelector('div');
+                if (!contentDiv) {
+                    // Create a new content div and move the text
+                    contentDiv = document.createElement('div');
+                    contentDiv.textContent = td.textContent;
+                    td.textContent = '';
+                    td.appendChild(contentDiv);
+
+                    // Initialize styles
+                    contentDiv.style.display = 'flex';
+                    contentDiv.style.justifyContent = 'center';
+                    contentDiv.style.alignItems = 'center';
+                    contentDiv.style.minHeight = '30px';
+                    contentDiv.style.color = 'white';
+                }
+
+                // Apply padding to the content div
+                contentDiv.style.paddingTop = cellPaddingTop;
+                contentDiv.style.paddingRight = cellPaddingRight;
+                contentDiv.style.paddingBottom = cellPaddingBottom;
+                contentDiv.style.paddingLeft = cellPaddingLeft;
+            });
+        }        // Initialize padding preview on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize all value displays
+            document.getElementById('cell-padding-top-value').textContent =
+                document.getElementById('cell-padding-top').value + 'px';
+            document.getElementById('cell-padding-right-value').textContent =
+                document.getElementById('cell-padding-right').value + 'px';
+            document.getElementById('cell-padding-bottom-value').textContent =
+                document.getElementById('cell-padding-bottom').value + 'px';
+            document.getElementById('cell-padding-left-value').textContent =
+                document.getElementById('cell-padding-left').value + 'px';
+
+            document.getElementById('header-padding-top-value').textContent =
+                document.getElementById('header-padding-top').value + 'px';
+            document.getElementById('header-padding-right-value').textContent =
+                document.getElementById('header-padding-right').value + 'px';
+            document.getElementById('header-padding-bottom-value').textContent =
+                document.getElementById('header-padding-bottom').value + 'px';
+            document.getElementById('header-padding-left-value').textContent =
+                document.getElementById('header-padding-left').value + 'px';
+
+            document.getElementById('scale-value').textContent =
+                document.getElementById('scale').value + 'x';
+
+            // Set initial styles for the table
+            const table = document.querySelector('table');
+            if (table) {
+                table.style.borderCollapse = 'collapse';
+                table.style.width = '100%';
+                table.style.border = '1px solid white';
+                table.style.fontSize = '16px';
+
+                // Apply initial padding to table cells using the contentDiv pattern
+                updateTablePreview();
+            }
+        });
+    </script>
+</body>
+</html>

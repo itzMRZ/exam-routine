@@ -355,27 +355,24 @@ function renderExamPage(pdfDocument, pageNum, exam, container) {
                 const pdfY0 = pdfPageHeight - y1; // invert y1
                 const pdfY1 = pdfPageHeight - y0; // invert y0
                 // Debug log raw and adjusted coords
-                console.log('Raw bbox:', [x0, y0, x1, y1], 'Adjusted bbox:', [x0, pdfY0, x1, pdfY1]);                // Convert to viewport rectangle - using the FULL viewport for highlighting
+                console.log('Raw bbox:', [x0, y0, x1, y1], 'Adjusted bbox:', [x0, pdfY0, x1, pdfY1]);
+
+                // Convert to viewport rectangle - using the FULL viewport for highlighting
                 const [left, top, right, bottom] = viewport.convertToViewportRectangle(
                     [x0, pdfY0, x1, pdfY1]
                 );
 
-                // Add 5% more width on both sides of the highlight
-                const highlightWidth = right - left;
-                const extraWidth = highlightWidth * 0.04; // 4% extra on each side
-                const expandedLeft = left - extraWidth;
-                const expandedRight = right + extraWidth;
-
                 context.save();
-                // Use semi-transparent red fill without outline
-                context.fillStyle = 'rgba(255, 0, 0, 0.25)'; // Red with 25% opacity
-                context.fillRect(expandedLeft, top, expandedRight - expandedLeft, bottom - top);
+                context.lineWidth = 2;
+                context.strokeStyle = 'red';
+                context.strokeRect(left, top, right - left, bottom - top);
                 context.restore();
-            }            // After highlighting, apply different crop percentages for sides vs top/bottom
-            const cropPercentSides = 0.09; // 9% crop on left and right sides
-            const cropPercentTopBottom = 0.02; // 2% crop on top and bottom
-            const cropX = viewport.width * cropPercentSides;
-            const cropY = viewport.height * cropPercentTopBottom;
+            }
+
+            // After highlighting, apply the 9% crop by creating a new canvas
+            const cropPercent = 0.09; // 9% crop on each side
+            const cropX = viewport.width * cropPercent;
+            const cropY = viewport.height * cropPercent;
             const croppedWidth = viewport.width - (cropX * 2);
             const croppedHeight = viewport.height - (cropY * 2);
 

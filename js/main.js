@@ -1,5 +1,68 @@
 // main.js - Main application functionality and event handlers
 
+// Ensure PDF Screenshot Helper is initialized
+if (!window.PDF_SCREENSHOT_HELPER_LOADED) {
+    console.warn("PDF Screenshot Helper not detected, initializing fallback...");
+    window.PDF_SCREENSHOT_HELPER_LOADED = true;
+    window.pdfScreenshotHelper = {
+        cropPdfScreenshot: function(canvas) {
+            console.log("Using fallback cropPdfScreenshot function");
+            const cropPercentSides = 0.09; // 9% crop on left and right sides
+            const cropPercentTopBottom = 0.02; // 2% crop on top and bottom
+            const cropX = Math.floor(canvas.width * cropPercentSides);
+            const cropY = Math.floor(canvas.height * cropPercentTopBottom);
+            const croppedWidth = canvas.width - (cropX * 2);
+            const croppedHeight = canvas.height - (cropY * 2);
+
+            // Create a new canvas for the cropped image
+            const croppedCanvas = document.createElement('canvas');
+            croppedCanvas.width = croppedWidth;
+            croppedCanvas.height = croppedHeight;
+            const ctx = croppedCanvas.getContext('2d');
+
+            // Draw the cropped image on the new canvas
+            ctx.drawImage(
+                canvas,
+                cropX, cropY, croppedWidth, croppedHeight, // Source rectangle
+                0, 0, croppedWidth, croppedHeight         // Destination rectangle
+            );
+
+            return croppedCanvas;
+        },
+        cropImageFromUrl: function(imageUrl, callback) {
+            console.log("Using fallback cropImageFromUrl function");
+            const tempImg = new Image();
+            tempImg.onload = function() {
+                const cropPercentSides = 0.09;
+                const cropPercentTopBottom = 0.02;
+                const cropX = Math.floor(tempImg.width * cropPercentSides);
+                const cropY = Math.floor(tempImg.height * cropPercentTopBottom);
+                const croppedWidth = tempImg.width - (cropX * 2);
+                const croppedHeight = tempImg.height - (cropY * 2);
+
+                // Create canvas for cropping
+                const canvas = document.createElement('canvas');
+                canvas.width = croppedWidth;
+                canvas.height = croppedHeight;
+                const ctx = canvas.getContext('2d');
+
+                // Draw the cropped image on canvas
+                ctx.drawImage(
+                    tempImg,
+                    cropX, cropY, croppedWidth, croppedHeight,
+                    0, 0, croppedWidth, croppedHeight
+                );
+
+                callback(canvas.toDataURL('image/png'));
+            };
+            tempImg.onerror = function() {
+                callback(imageUrl);
+            };
+            tempImg.src = imageUrl;
+        }
+    };
+}
+
 /**
  * Add a course to the schedule based on input values
  * @param {number} index - The index of the input row

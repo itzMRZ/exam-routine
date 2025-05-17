@@ -109,46 +109,18 @@ function sortScheduleTable() {
 }
 
 /**
- * Takes a screenshot of the schedule table WITHOUT cropping
+ * Takes a screenshot of the schedule table
  */
-function takeScreenshot(options = {}) {
-    // Default options for screenshot
-    const defaultOptions = {
-        cellPaddingTop: '5px',
-        cellPaddingRight: '5px',
-        cellPaddingBottom: '5px',
-        cellPaddingLeft: '5px',
-        headerPaddingTop: '5px',
-        headerPaddingRight: '5px',
-        headerPaddingBottom: '5px',
-        headerPaddingLeft: '5px',
-        scale: 3  // Increased to 3x for higher quality
-    };
-
-    // Merge default options with provided options
-    const screenshotOptions = {...defaultOptions, ...options};
-
+function takeScreenshot() {
     // Check if table has content
     if (document.getElementById('schedule-body').children.length === 0) {
         showToast('No exams to screenshot. Please add courses first.', 'error');
         return;
     }
 
-    // Show a notification that screenshot is being generated
-    showToast('Creating screenshot...', 'info');
-
     // Create a temporary container that includes only what we want in the screenshot
     const tempContainer = document.createElement('div');
     tempContainer.className = 'bg-black p-6 rounded';
-    // Set explicit width to match the original table's width
-    const originalTable = document.querySelector('table');
-    if (originalTable) {
-        const originalWidth = originalTable.offsetWidth;
-        tempContainer.style.width = originalWidth + 'px';
-    }
-    // Set overflow to visible to prevent cutting off content
-    tempContainer.style.overflow = 'visible';
-    tempContainer.style.marginBottom = '20px'; // Add extra margin at bottom
 
     // Add the title
     const title = document.createElement('h1');
@@ -158,7 +130,7 @@ function takeScreenshot(options = {}) {
 
     // Create a new table from scratch
     const newTable = document.createElement('table');
-    newTable.className = 'min-w-full bg-black border border-white text-center';
+    newTable.className = 'min-w-full bg-opacity-70 bg-black border border-white text-center';
     newTable.style.borderCollapse = 'collapse';
     newTable.style.width = '100%';
     newTable.style.border = '1px solid white';
@@ -174,19 +146,15 @@ function takeScreenshot(options = {}) {
     headers.forEach(text => {
         const th = document.createElement('th');
         th.className = 'px-3 py-3 text-center';
-        th.style.color = 'white';
 
         // Create a div inside the header cell for flexbox centering
-        const contentDiv = document.createElement('div');        contentDiv.style.display = 'flex';
+        const contentDiv = document.createElement('div');
+        contentDiv.style.display = 'flex';
         contentDiv.style.justifyContent = 'center';
         contentDiv.style.alignItems = 'center';
         contentDiv.style.minHeight = '30px'; // Ensure minimum height
-        contentDiv.style.paddingTop = screenshotOptions.headerPaddingTop;
-        contentDiv.style.paddingRight = screenshotOptions.headerPaddingRight;
-        contentDiv.style.paddingBottom = screenshotOptions.headerPaddingBottom;
-        contentDiv.style.paddingLeft = screenshotOptions.headerPaddingLeft;
+        contentDiv.style.padding = '0rem 0 0.9rem 0'; // Less padding on top, more on bottom
         contentDiv.style.fontWeight = 'bold';
-        contentDiv.style.color = 'white';
         contentDiv.textContent = text;
 
         th.appendChild(contentDiv);
@@ -210,18 +178,14 @@ function takeScreenshot(options = {}) {
         Array.from(originalRow.cells).forEach(originalCell => {
             const cell = document.createElement('td');
             cell.className = 'px-3 py-3';
-            cell.style.color = 'white';
 
             // Create a div inside the cell for flexbox centering
-            const contentDiv = document.createElement('div');            contentDiv.style.display = 'flex';
+            const contentDiv = document.createElement('div');
+            contentDiv.style.display = 'flex';
             contentDiv.style.justifyContent = 'center';
             contentDiv.style.alignItems = 'center';
             contentDiv.style.minHeight = '30px'; // Ensure minimum height
-            contentDiv.style.paddingTop = screenshotOptions.cellPaddingTop;
-            contentDiv.style.paddingRight = screenshotOptions.cellPaddingRight;
-            contentDiv.style.paddingBottom = screenshotOptions.cellPaddingBottom;
-            contentDiv.style.paddingLeft = screenshotOptions.cellPaddingLeft;
-            contentDiv.style.color = 'white';
+            contentDiv.style.padding = '0rem 0 0.9rem 0'; // Less padding on top, more on bottom
             contentDiv.textContent = originalCell.textContent;
 
             cell.appendChild(contentDiv);
@@ -242,73 +206,38 @@ function takeScreenshot(options = {}) {
     tempContainer.style.left = '-9999px';
     document.body.appendChild(tempContainer);
 
-    console.log('Starting screenshot capture...');
+    // Take high-quality screenshot of the temporary element
+    html2canvas(tempContainer, {
+        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+        logging: false,
+        scale: 4, // Higher resolution for better quality
+        useCORS: true,
+        allowTaint: true
+    }).then(canvas => {
+        // Apply 9% crop if the helper is available
+        if (window.pdfScreenshotHelper) {
+            canvas = window.pdfScreenshotHelper.cropPdfScreenshot(canvas);
+        }
 
-    // Check if html2canvas is available
-    if (typeof html2canvas !== 'function') {
-        console.error('html2canvas library not loaded');
-        showToast('Screenshot failed - missing library. Please refresh the page and try again.', 'error');
+        // Store the high-quality screenshot in a global variable for later use
+        window.highQualityScreenshot = canvas.toDataURL('image/png');
+
+        // Create download link
+        const link = document.createElement('a');
+        link.download = 'Spring25-Exam-Schedule.png';
+        link.href = window.highQualityScreenshot;
+        link.click();
+
+        // Clean up
         document.body.removeChild(tempContainer);
-        return;
-    }
 
-    // Add a small delay before capturing to ensure everything has rendered properly
-    setTimeout(() => {
-        // Explicitly set the height to include a bit of extra space
-        const computedHeight = tempContainer.scrollHeight + 20; // Add extra pixels at bottom
-
-        // Take the screenshot
-        html2canvas(tempContainer, {
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            logging: true,
-            scale: screenshotOptions.scale, // Use configurable scale option for quality
-            useCORS: true,
-            allowTaint: true,
-            width: tempContainer.offsetWidth,
-            height: computedHeight, // Use computed height with extra padding
-            windowHeight: computedHeight + 50, // Ensure window height is sufficient
-            onclone: function(clonedDoc) {
-                // Make sure the clone has visible overflow
-                const clonedContainer = clonedDoc.body.querySelector('div');
-                if (clonedContainer) {
-                    clonedContainer.style.overflow = 'visible';
-                    clonedContainer.style.paddingBottom = '20px';
-                }
-            }
-        }).then(canvas => {
-            console.log('Screenshot captured successfully');
-
-            // NO CROPPING IS APPLIED HERE
-            // Store the high-quality screenshot in a global variable for later use
-            window.highQualityScreenshot = canvas.toDataURL('image/png');
-
-            // Create download link
-            const link = document.createElement('a');
-            link.download = 'Spring25-Exam-Schedule.png';
-            link.href = window.highQualityScreenshot;
-            document.body.appendChild(link);
-
-            // Trigger download
-            link.click();
-
-            // Clean up
-            setTimeout(() => {
-                document.body.removeChild(link);
-                if (document.body.contains(tempContainer)) {
-                    document.body.removeChild(tempContainer);
-                }
-            }, 100);
-
-            // Show success message
-            showToast('Schedule screenshot saved!', 'success');
-        }).catch(error => {
-            console.error('Screenshot error:', error);
-            showToast('Error taking screenshot. Please try again.', 'error');
-            if (document.body.contains(tempContainer)) {
-                document.body.removeChild(tempContainer);
-            }
-        });
-    }, 100); // Add a short delay to ensure DOM is fully rendered
+        // Show success message
+        showToast('Schedule screenshot saved!', 'success');
+    }).catch(error => {
+        console.error('Screenshot error:', error);
+        showToast('Error taking screenshot. Please try again.', 'error');
+        document.body.removeChild(tempContainer);
+    });
 }
 
 /**
@@ -338,72 +267,14 @@ function openScreenshotModal(imageUrl) {
     const img = document.createElement('img');
     img.id = 'screenshot-fullscreen-img';
     img.alt = 'Full Screen Schedule';
-    img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;transform-origin:center;';    // Apply 9% crop to the image in the modal
-    console.log('Opening screenshot modal');
+    img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;transform-origin:center;';
 
-    // Helper function to manually crop the image from URL
-    function manuallyProcessImageUrl(url, callback) {
-        const tempImg = new Image();
-        tempImg.onload = function() {
-            // Apply different crop percentages for sides vs top/bottom
-            const cropPercentSides = 0.09; // 9% crop on left and right sides
-            const cropPercentTopBottom = 0.02; // 2% crop on top and bottom
-            const cropX = Math.floor(tempImg.width * cropPercentSides);
-            const cropY = Math.floor(tempImg.height * cropPercentTopBottom);
-            const croppedWidth = tempImg.width - (cropX * 2);
-            const croppedHeight = tempImg.height - (cropY * 2);
-
-            console.log(`Manual cropping image from ${tempImg.width}x${tempImg.height} to ${croppedWidth}x${croppedHeight}`);
-
-            // Create canvas for cropping
-            const canvas = document.createElement('canvas');
-            canvas.width = croppedWidth;
-            canvas.height = croppedHeight;
-            const ctx = canvas.getContext('2d');
-
-            // Draw the cropped image on canvas
-            ctx.drawImage(
-                tempImg,
-                cropX, cropY, croppedWidth, croppedHeight, // Source rectangle
-                0, 0, croppedWidth, croppedHeight         // Destination rectangle
-            );
-
-            // Return the cropped image data URL
-            const croppedImageUrl = canvas.toDataURL('image/png');
-            callback(croppedImageUrl);
-        };
-
-        tempImg.onerror = function(error) {
-            console.error('Error loading image for manual cropping:', error);
-            callback(url); // Return original on error
-        };
-
-        tempImg.src = url;
-    }
-
-    // Try to use the helper, fall back to manual method if needed
-    if (imageUrl.startsWith('data:image')) {
-        if (window.pdfScreenshotHelper && typeof window.pdfScreenshotHelper.cropImageFromUrl === 'function') {
-            console.log('Using helper to crop image');
-            try {
-                window.pdfScreenshotHelper.cropImageFromUrl(imageUrl, croppedImageUrl => {
-                    console.log('Image cropped successfully using helper');
-                    img.src = croppedImageUrl;
-                });
-            } catch (cropError) {
-                console.error('Error using helper to crop image:', cropError);
-                manuallyProcessImageUrl(imageUrl, croppedUrl => {
-                    img.src = croppedUrl;
-                });
-            }
-        } else {
-            console.log('Helper not available, using manual image cropping');
-            manuallyProcessImageUrl(imageUrl, croppedUrl => {
-                img.src = croppedUrl;
-            });
-        }
+    // Apply 9% crop to the image in the modal using the helper if available
+    if (imageUrl.startsWith('data:image') && window.pdfScreenshotHelper) {
+        window.pdfScreenshotHelper.cropImageFromUrl(imageUrl, croppedImageUrl => {
+            img.src = croppedImageUrl;
+        });
     } else {
-        console.log('Image URL not valid for cropping, using original');
         img.src = imageUrl;
     }
 
