@@ -6,14 +6,14 @@
     z-index: 9999;
 }
 .toast {
-    padding: 12px;
-    border-radius: 6px;
-    margin-bottom: 8px;
-    min-width: 240px;
-    font-size: 0.875rem;
+    padding: 12px; /* Reduced from 16px */
+    border-radius: 6px; /* Reduced from 8px */
+    margin-bottom: 8px; /* Reduced from 10px */
+    min-width: 240px; /* Reduced from 280px */
+    font-size: 0.875rem; /* Added smaller font size */
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     transform: translateX(100%);
-    animation: slideIn 0.2s forwards, fadeOut 0.5s 2s forwards;
+    animation: slideIn 0.2s forwards, fadeOut 0.5s 2s forwards; /* Reduced total duration from 3.3s to 2.2s */
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -94,7 +94,19 @@
 
 /* Add padding to body to prevent footer overlap */
 body {
-    padding-bottom: 50px;
+    padding-bottom: 120px !important; /* Increased padding for more space */
+    background-image: url('https://i.postimg.cc/yWq3K43q/4d4883bf150f7162cc97c2c822f7cb24.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+/* Small icon styling for note */
+.note-icon {
+    font-size: 0.6rem;
+    margin-right: 1px;
+}
+.note-button {
+    font-size: 0.7rem;
 }
 
 /* Input row styling for all screen sizes */
@@ -157,11 +169,6 @@ body {
     border-radius: 3px;
 }
 
-/* Add more padding at the bottom to accommodate the fixed footer */
-body {
-    padding-bottom: 120px !important; /* Increased padding for more space */
-}
-
 /* Create proper spacing for the content area */
 #capture-area {
     margin-bottom: 50px; /* Increased margin */
@@ -169,145 +176,38 @@ body {
 
 /* Ensure screenshot button has space above the footer */
 #screenshot-btn, #cross-check-btn {
-    margin-bottom: 30px; /* Reduced margin to fix extra space */
+    margin-bottom: 5px; /* Consistent margin */
 }
 
-/* Screenshot Fullscreen Modal */
-#screenshot-fullscreen-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.95);
-    z-index: 2000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    animation: fadeIn 0.3s forwards;
+/* Modal styles */
+#cross-check-modal {
+    transition: opacity 0.3s ease-in-out;
 }
 
-#screenshot-fullscreen-img {
-    max-width: 95%;
-    max-height: 95%;
-    object-fit: contain;
-    transition: transform 0.2s ease;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-}
-
-@keyframes fadeIn {
-    to { opacity: 1; }
-}
-
-/* View Screenshot button styling */
-.mt-4.text-center {
-    margin-top: 1rem;
-    text-align: center;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.05);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-
-/* Mobile optimizations for screenshot */
-@media (max-width: 640px) {
-    #screenshot-fullscreen-modal button {
-        padding: 10px 16px;
-        font-size: 16px;
-    }
-
-    #screenshot-fullscreen-img {
-        max-width: 100%;
-        max-height: 80%;
-    }
-}
-
-/* Ensure screenshot button has space above the footer */
-#screenshot-btn, #cross-check-btn {
-    margin-bottom: 30px; /* Reduced margin to fix extra space */
-}
-
-/* PDF Fullscreen Modal */
-#pdf-fullscreen-modal {
-    /* Remove opacity/animation for instant open */
-    opacity: 1 !important;
-    animation: none !important;
-}
-
-#pdf-fullscreen-img {
-    transition: transform 0.2s cubic-bezier(0.4,0,0.2,1);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+/* Canvas container styles */
+#pdf-container canvas {
     max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
+    height: auto;
     display: block;
     margin: 0 auto;
 }
 
-/* Reset zoom button styling */
-#reset-zoom-btn {
-    background: rgba(59,130,246,0.8);
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    padding: 8px 16px;
-    cursor: pointer;
-    z-index: 2001;
-    font-size: 1rem;
-    transition: background 0.2s;
-}
-#reset-zoom-btn:hover {
-    background: rgba(37,99,235,0.95);
+/* Improved canvas container for better responsiveness */
+.overflow-x-auto {
+    overflow-x: auto; /* Standard scrolling */
 }
 
-/* Responsive modal for mobile */
+/* Mobile optimizations for modal */
 @media (max-width: 640px) {
-    #pdf-fullscreen-modal div {
-        width: 95% !important;
-        height: 80% !important;
-        padding: 10px !important;
+    #cross-check-modal .max-w-3xl {
+        width: 95%;
+        max-height: 85vh;
     }
-    #pdf-fullscreen-img {
-        max-width: 100%;
-        max-height: 80%;
+    #pdf-container {
+        padding: 0.5rem;
     }
-    #reset-zoom-btn {
-        padding: 10px 16px;
-        font-size: 16px;
-    }
-}
-
-/* Mobile optimizations for modals */
-@media (max-width: 640px) {
-    #screenshot-fullscreen-modal div,
-    #pdf-fullscreen-modal div {
-        width: 90% !important;
-        height: 80% !important;
-        padding: 10px !important;
-    }
-}
-
-/* Mobile optimizations for PDF viewing */
-@media (max-width: 640px) {
-    /* Fix extra space before cross-check button on mobile */
-    .flex.flex-wrap.gap-3 {
-        gap: 0.25rem !important;
-    }
-
-    #screenshot-btn, #cross-check-btn {
-        margin-top: 0.5rem;
-        margin-bottom: 1.5rem;
-        width: 100%;
-        max-width: 300px;
+    #pdf-container canvas {
+        width: 100% !important;
+        height: auto !important;
     }
 }

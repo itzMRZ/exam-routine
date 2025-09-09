@@ -2,7 +2,7 @@
 <html lang="en">
 <head>    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spring-25 Midterm Schedule</title>
+    <title>Summer-2025 Final Schedule</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -11,162 +11,7 @@
     <link href="data:image/x-icon;base64,AAABAAEAEBACAAAAAACwAAAAFgAAACgAAAAQAAAAIAAAAAEAAQAAAAAAQAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAA/4QAAMxjAADMYwAA/GMAAMxjAADMawAAMHcAADBjAAAAAAAA+AAAAMBmAADAPAAA+BgAAMAYAADAPAAA+GYAAAAAAAAznAAAM5wAAAOcAAAznAAAM5QAAM+IAADPnAAA//8AAAf/AAA/mQAAP8MAAAfnAAA/5wAAP8MAAAeZAAD//wAA" rel="icon" type="image/x-icon">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/styles.css">
-    <style>
-        /* Additional inline styles */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-        }
-        .toast {
-            padding: 12px; /* Reduced from 16px */
-            border-radius: 6px; /* Reduced from 8px */
-            margin-bottom: 8px; /* Reduced from 10px */
-            min-width: 240px; /* Reduced from 280px */
-            font-size: 0.875rem; /* Added smaller font size */
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            transform: translateX(100%);
-            animation: slideIn 0.2s forwards, fadeOut 0.5s 2s forwards; /* Reduced total duration from 3.3s to 2.2s */
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        @keyframes slideIn {
-            to { transform: translateX(0); }
-        }
-        @keyframes fadeOut {
-            to { opacity: 0; }
-        }
-        .success {
-            background-color: rgba(52, 211, 153, 0.9);
-            color: white;
-        }
-        .error {
-            background-color: rgba(239, 68, 68, 0.9);
-            color: white;
-        }
-        .info {
-            background-color: rgba(59, 130, 246, 0.9);
-            color: white;
-        }
-        /* Custom dropdown styling */
-        .custom-select {
-            position: relative;
-        }
-        .custom-select .options {
-            display: none;
-            position: absolute;
-            background-color: white;
-            max-height: 200px;
-            overflow-y: auto;
-            border-radius: 6px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            z-index: 1000;
-            width: 100%;
-        }
-        .custom-select .option {
-            padding: 8px 12px;
-            cursor: pointer;
-        }
-        .custom-select .option:hover {
-            background-color: #f3f4f6;
-        }
-        /* Mobile optimizations */
-        @media (max-width: 640px) {
-            input, button, select {
-                font-size: 16px; /* Prevents iOS zoom on focus */
-                height: 44px; /* More touch-friendly */
-            }
-            .table-container {
-                margin: 0 -16px; /* Negative margin to allow table to be wider than container on mobile */
-            }
-        }
-        /* Add specific styling for sections datalist */
-        .section-input-container {
-            position: relative;
-            width: 100%;
-        }
 
-        /* Footer styling */
-        .footer {
-            background-color: rgba(30, 58, 138, 0.7);
-            padding: 8px 0;
-            margin-top: 20px;
-            backdrop-filter: blur(5px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .footer a {
-            color: #fcd34d; /* Yellow color matching the buttons */
-        }
-        .footer a:hover {
-            color: white;
-        }
-
-        /* Add padding to body to prevent footer overlap */
-        body {
-            padding-bottom: 50px;
-        }
-
-        /* Input row styling for all screen sizes */
-        .input-row {
-            display: flex;
-            flex-direction: row;
-            width: 100%;
-            margin-bottom: 8px;
-            gap: 4px; /* Use gap for consistent spacing */
-        }
-        .input-row .course-code {
-            flex: 2;
-        }
-        .input-row .section {
-            flex: 1;
-        }
-        .input-row .add-course {
-            flex: 1;
-        }
-
-        /* Dropdown improvements */
-        .dropdown {
-            position: absolute;
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.375rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            z-index: 9999;
-            max-height: 12rem;
-            overflow-y: auto;
-            width: 100%;
-            color: #1f2937; /* Add dark text color */
-        }
-        .dropdown-option {
-            padding: 0.5rem 0.75rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: #1f2937; /* Ensure text is visible */
-        }
-        .dropdown-option:hover {
-            background-color: #fef3c7;
-        }
-        .dropdown-option.active {
-            background-color: #fde68a;
-        }
-        .dropdown-option.disabled {
-            color: #9ca3af;
-            cursor: default;
-        }
-        /* Scrollbar styling */
-        .dropdown::-webkit-scrollbar {
-            width: 6px;
-        }
-        .dropdown::-webkit-scrollbar-track {
-            background: #f3f4f6;
-        }
-        .dropdown::-webkit-scrollbar-thumb {
-            background-color: #d1d5db;
-            border-radius: 3px;
-        }
-    </style>
     <script defer data-domain="bracu-exam-routine.itzmrz.xyz" src="https://plausible.io/js/script.outbound-links.js"></script>
     <script>window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }</script>
     <script>
@@ -195,58 +40,15 @@
     }
   })();
 </script>
-<style>
-    /* Add more padding at the bottom to accommodate the fixed footer */
-    body {
-        padding-bottom: 120px !important; /* Increased padding for more space */
-    }
 
-    /* Create proper spacing for the content area */
-    #capture-area {
-        margin-bottom: 50px; /* Increased margin */
-    }    /* Ensure screenshot button has space above the footer */    #screenshot-btn, #cross-check-btn {
-        margin-bottom: 5px; /* Consistent with CSS file */
-    }
-
-    /* Modal styles */
-    #cross-check-modal {
-        transition: opacity 0.3s ease-in-out;
-    }    /* Canvas container styles */
-    #pdf-container canvas {
-        max-width: 100%;
-        height: auto;
-        display: block;
-        margin: 0 auto;
-    }
-
-    /* Improved canvas container for better responsiveness */
-    .overflow-x-auto {
-        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-    }
-
-    /* Mobile optimizations for modal */
-    @media (max-width: 640px) {
-        #cross-check-modal .max-w-3xl {
-            width: 95%;
-            max-height: 85vh;
-        }
-        #pdf-container {
-            padding: 0.5rem;
-        }
-        #pdf-container canvas {
-            width: 100% !important;
-            height: auto !important;
-        }
-    }
-</style>
 </head>
-<body class="bg-black text-white flex flex-col items-center justify-center min-h-screen p-4 sm:p-6" style="background-image: url('https://i.postimg.cc/yWq3K43q/4d4883bf150f7162cc97c2c822f7cb24.jpg'); background-size: cover; background-attachment: fixed;">
+<body class="bg-black text-white flex flex-col items-center justify-center min-h-screen p-4 sm:p-6">
     <div id="toast-container" class="toast-container"></div>    <div id="capture-area" class="flex flex-col items-center w-full max-w-4xl">
-        <h1 class="text-3xl font-bold mb-3 text-center">SPRING-25 MIDTERM SCHEDULE</h1>        <!-- Note with styled button -->
+        <h1 class="text-3xl font-bold mb-3 text-center">SUMMER-2025 FINAL SCHEDULE</h1>        <!-- Note with styled button -->
         <div class="flex items-center justify-center mb-6 text-yellow-200 text-sm">
             <span>Note: Do not forget to click</span>
-            <span class="bg-yellow-300 text-gray-800 px-1 py-0.5 rounded mx-1 inline-flex items-center" style="font-size: 0.7rem;">
-                <i class="fas fa-plus" style="font-size: 0.6rem; margin-right: 1px;"></i>ADD
+            <span class="bg-yellow-300 text-gray-800 px-1 py-0.5 rounded mx-1 inline-flex items-center note-button">
+                <i class="fas fa-plus note-icon"></i>ADD
             </span>
             <span>after each entry</span>
         </div>
@@ -315,7 +117,7 @@
         <div class="bg-gray-800 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto overscroll-contain">
             <div class="sticky top-0 z-10 flex justify-between items-center p-4 border-b border-gray-700 bg-gray-800">
                 <h3 class="text-xl font-bold text-white">Exam Schedule Cross Check</h3>
-                <button id="close-modal-btn" class="text-gray-400 hover:text-white p-2">
+                <button id="close-modal-btn" class="text-gray-400 hover:text-white p-2" title="Close modal">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
@@ -344,7 +146,6 @@
     <script src="js/ui.js"></script>
     <script src="js/data.js"></script>
     <script src="js/dropdown.js"></script>
-    <script src="js/pdf-debug.js"></script>
     <script src="js/pdf-helper.js"></script>
     <script src="js/pdf-viewer.js"></script>
     <script src="js/main.js"></script></body>

@@ -29,8 +29,8 @@ function showToast(message, type = 'info') {
  */
 function updateTitle(isFinalsSchedule) {
     const examType = isFinalsSchedule ? "FINAL" : "MIDTERM";
-    document.querySelector('h1').textContent = `SPRING-25 ${examType} SCHEDULE`;
-    document.title = `Spring-25 ${examType} Schedule`;
+    document.querySelector('h1').textContent = `SUMMER-2025 ${examType} SCHEDULE`;
+    document.title = `Summer-2025 ${examType} Schedule`;
 }
 
 /**
@@ -284,7 +284,7 @@ function takeScreenshot(options = {}) {
 
             // Create download link
             const link = document.createElement('a');
-            link.download = 'Spring25-Exam-Schedule.png';
+            link.download = 'Summer25-Final-Schedule.png';
             link.href = window.highQualityScreenshot;
             document.body.appendChild(link);
 

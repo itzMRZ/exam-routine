@@ -1,7 +1,8 @@
-[![VibeCoded Social](https://img.shields.io/badge/VibeCoded-2E2E2E?style=social&logo=githubcopilot&logoColor=auto&labelColor=8000FF)](http://vibe-coding.urbanup.com/18529533)  
 # Exam Schedule Viewer
 
-An application to view and organize your exam schedule for Spring-25.
+[![VibeCoded Social](https://img.shields.io/badge/VibeCoded-2E2E2E?style=social&logo=githubcopilot&logoColor=auto&labelColor=8000FF)](http://vibe-coding.urbanup.com/18529533)
+
+A clean, modern web application to view and organize your exam schedule for Summer-2025 Finals.
 
 ## Features
 
@@ -9,6 +10,31 @@ An application to view and organize your exam schedule for Spring-25.
 - Automatic sorting by date and time
 - Take screenshots of your schedule
 - Cross-check your exams with the original PDF schedule
+- Mobile-responsive design
+- Clean, optimized codebase
+
+## Project Structure
+
+```text
+exam-routine/
+├── index.html              # Main HTML file
+├── css/
+│   └── styles.css          # All CSS styles (consolidated)
+├── js/
+│   ├── data.js             # Course data management
+│   ├── dropdown.js         # Dropdown functionality
+│   ├── main.js             # Application initialization
+│   ├── pdf-helper.js       # PDF rendering and processing
+│   ├── pdf-screenshot-helper.js # PDF screenshot utilities
+│   ├── pdf-viewer.js       # PDF display functionality
+│   ├── ui.js               # UI management and interactions
+│   └── utils.js            # Utility functions
+├── convert_schedule.py     # PDF to JSON converter (midterms)
+├── pdf_converter.py        # Advanced PDF converter (finals)
+├── exam_data.json          # Processed exam data
+├── examData.pdf            # Source PDF file
+└── README.md               # This file
+```
 
 ## Setup
 
@@ -18,44 +44,29 @@ You can open the `index.html` file directly in your browser. However, some brows
 
 ### Option 2: Use a local server (recommended)
 
-1. Option A: Run the provided test-server.bat file (Windows)
-   - Double-click on test-server.bat
-   - Open http://localhost:8000 in your browser
+1. **Python**: `python -m http.server 8000`
+2. **Node.js**: `npx http-server -p 8000`
+3. **PHP**: `php -S localhost:8000`
 
-2. Option B: If you have Python installed
-   - Open a terminal/command prompt in this directory
-   - Run: `python -m http.server 8000`
-   - Open http://localhost:8000 in your browser
+Then open <http://localhost:8000> in your browser.
 
-3. Option C: If you have Node.js installed
-   - Open a terminal in this directory
-   - Run: `npx http-server -p 8000`
-   - Open http://localhost:8000 in your browser
+## Converting PDF Data
 
-## Using the Cross-Check Feature
+To update the exam data from a new PDF:
 
-The improved cross-check feature now uses page numbers from the JSON data to directly display the correct PDF pages:
+```bash
+# For midterm schedules
+python convert_schedule.py examData.pdf exam_data.json
 
-1. Add your courses using the input fields
-2. Click the "Cross Check" button
-3. A modal will appear showing the PDF pages that correspond to your exams
-4. Each exam shows its corresponding page from the PDF document based on the "Page Number" field from the data
-5. Use the modal to verify that your exam details match the official schedule
+# For final schedules (recommended - more advanced)
+python pdf_converter.py examData.pdf exam_data.json
+```
 
-Note: The application will automatically find and display the correct pages for each course based on the page number stored in the data file, without needing to search through the PDF content.
+## Recent Improvements
 
-## Troubleshooting
-
-- If the cross-check feature doesn't work:
-  - Make sure `examData.pdf` is in the root directory of the application
-  - Try using a local server instead of opening the file directly
-  - Check the browser console for any error messages
-  - Make sure your browser supports PDF.js (most modern browsers do)
-  - Check that the JSON data contains valid "Page Number" values for your courses
-
-- If PDF pages aren't displaying correctly:
-  - The PDF viewer will show the first few pages if a specific page number isn't found
-  - Check that the course code and section are entered exactly as they appear in the data file
-  - Try refreshing the page or clearing your browser cache
-  - **If PDF images look blurry or low-resolution:**
-    The application now renders PDF pages at your device's full pixel density for sharper images. If you still see blurry images, try clicking "View Full Screen" on a PDF page for a higher-resolution view. On some devices, browser zoom or display scaling may affect clarity.
+- **Cleaned up codebase**: Removed duplicate and unnecessary files
+- **Consolidated CSS**: All styles moved to single CSS file
+- **Optimized JavaScript**: Removed redundant functionality
+- **Better file organization**: Clear structure and naming
+- **Mobile optimized**: Enhanced responsive design
+- **Performance improvements**: Faster loading and better user experience
