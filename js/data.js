@@ -22,10 +22,35 @@ function loadScheduleData() {
             return response.json();
         })
         .then(data => {
-            // Determine if this is finals schedule by checking first exam
-            if (data.exams && data.exams.length > 0) {
-                isFinalsSchedule = 'Final Date' in data.exams[0];
-                ui.updateTitle(isFinalsSchedule);
+            const metadata = data.metadata || {};
+
+            try {
+                ui.setLastUpdatedLabel(metadata.last_updated || metadata.generated_at || null);
+            } catch (e) {
+                console.warn('Failed to set last updated label:', e);
+            }
+
+            // Prefer explicit exam name + semester combo when provided
+            if (metadata.exam_name && metadata.semester) {
+                const combinedTitle = `${metadata.exam_name} ${metadata.semester}`.trim();
+                try {
+                    ui.setCustomTitle(combinedTitle);
+                } catch (e) {
+                    console.warn('Failed to set combined title from metadata:', e);
+                }
+            } else if (metadata.title) {
+                // Fallback to legacy metadata.title if present
+                try {
+                    ui.setCustomTitle(metadata.title);
+                } catch (e) {
+                    console.warn('Failed to set custom title from metadata:', e);
+                }
+            } else {
+                // Determine if this is finals schedule by checking first exam
+                if (data.exams && data.exams.length > 0) {
+                    isFinalsSchedule = 'Final Date' in data.exams[0];
+                    ui.updateTitle(isFinalsSchedule);
+                }
             }
 
             // Filter out entries that don't have all required fields

@@ -4,6 +4,10 @@
     top: 20px;
     right: 20px;
     z-index: 9999;
+html,
+body {
+    min-height: 100vh;
+}
 }
 .toast {
     padding: 12px; /* Reduced from 16px */
@@ -25,15 +29,15 @@
     to { opacity: 0; }
 }
 .success {
-    background-color: rgba(52, 211, 153, 0.9);
+    background-color: rgba(4, 120, 87, 0.95);
     color: white;
 }
 .error {
-    background-color: rgba(239, 68, 68, 0.9);
+    background-color: rgba(185, 28, 28, 0.95);
     color: white;
 }
 .info {
-    background-color: rgba(59, 130, 246, 0.9);
+    background-color: rgba(29, 78, 216, 0.95);
     color: white;
 }
 
@@ -82,6 +86,7 @@
     background-color: rgba(30, 58, 138, 0.7);
     padding: 8px 0;
     margin-top: 20px;
+    -webkit-backdrop-filter: blur(5px);
     backdrop-filter: blur(5px);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -95,9 +100,14 @@
 /* Add padding to body to prevent footer overlap */
 body {
     padding-bottom: 120px !important; /* Increased padding for more space */
-    background-image: url('https://i.postimg.cc/yWq3K43q/4d4883bf150f7162cc97c2c822f7cb24.jpg');
-    background-size: cover;
-    background-attachment: fixed;
+    background-color: #050709;
+    background-image:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.75)),
+        url('../assets/bg.jpg');
+    background-size: cover, cover;
+    background-position: center, center;
+    background-repeat: no-repeat;
+    background-attachment: fixed, fixed;
 }
 
 /* Small icon styling for note */
@@ -210,4 +220,51 @@ body {
         width: 100% !important;
         height: auto !important;
     }
+}
+
+@media (max-width: 768px) {
+    body {
+        background-attachment: scroll, scroll;
+        background-size: cover, 180%;
+    }
+}
+
+/* --- Subtle color tuning --- */
+
+#last-update {
+    letter-spacing: 0.35em;
+    color: #fbbf24;
+    font-weight: 600;
+}
+
+.course-code,
+.section {
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background-color: rgba(255, 255, 255, 0.95);
+    color: #0f172a !important;
+}
+
+.add-course,
+#add-more-btn {
+    background-color: #facc15 !important;
+    color: #1f2937 !important;
+    border: none;
+}
+.add-course:hover,
+#add-more-btn:hover {
+    background-color: #fde047 !important;
+}
+
+#screenshot-btn {
+    background-color: #facc15 !important;
+    color: #1f2937 !important;
+}
+#cross-check-btn {
+    background-color: #3b82f6 !important;
+}
+#screenshot-btn:hover {
+    background-color: #fde047 !important;
+}
+#cross-check-btn:hover {
+    background-color: #2563eb !important;
 }

@@ -2,16 +2,20 @@
 
 [![VibeCoded Social](https://img.shields.io/badge/VibeCoded-2E2E2E?style=social&logo=githubcopilot&logoColor=auto&labelColor=8000FF)](http://vibe-coding.urbanup.com/18529533)
 
-A clean, modern web application to view and organize your exam schedule for Summer-2025 Finals.
+A lightweight web app for building, sorting, and sharing BRACU exam schedules without spreadsheets.
+
+## Live Demo
+
+- [bracu-exam-routine.itzmrz.xyz](https://bracu-exam-routine.itzmrz.xyz/)
 
 ## Features
 
-- Add and track your courses and exam schedules
-- Automatic sorting by date and time
-- Take screenshots of your schedule
-- Cross-check your exams with the original PDF schedule
-- Mobile-responsive design
-- Clean, optimized codebase
+- Quick course + section lookup with autocomplete
+- Automatic sorting by date and start time
+- High-quality screenshot export for sharing
+- PDF cross-check viewer for source verification
+- Mobile-first layout and keyboard-friendly inputs
+- Clean structure (HTML/CSS/JS) for easy customization
 
 ## Project Structure
 
@@ -61,6 +65,18 @@ python convert_schedule.py examData.pdf exam_data.json
 # For final schedules (recommended - more advanced)
 python pdf_converter.py examData.pdf exam_data.json
 ```
+
+### Updating the displayed exam title
+
+The site title is built from `<Exam Name> <Semester>` pulled from `exam_data.json > metadata`.
+
+Use the helper script to update it in one step:
+
+```bash
+python set_title.py "MidTerm Exam" "Fall-2025"
+```
+
+This writes `metadata.exam_name`, `metadata.semester`, the combined `metadata.title`, and stamps `metadata.last_updated` (used for the tiny "Last Update" label under the page title). Refresh the site after running the command.
 
 ## Recent Improvements
 
