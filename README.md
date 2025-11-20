@@ -1,6 +1,7 @@
+[![VibeCoded Social](https://img.shields.io/badge/VibeCoded-2E2E2E?style=social&logo=githubcopilot&logoColor=auto&labelColor=8000FF)](http://vibe-coding.urbanup.com/18529533)
 # Exam Schedule Viewer
 
-[![VibeCoded Social](https://img.shields.io/badge/VibeCoded-2E2E2E?style=social&logo=githubcopilot&logoColor=auto&labelColor=8000FF)](http://vibe-coding.urbanup.com/18529533)
+
 
 A lightweight web app for building, sorting, and sharing BRACU exam schedules without spreadsheets.
 
