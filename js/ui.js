@@ -164,11 +164,11 @@ function takeScreenshot() {
     }
 
     // Show a notification that screenshot is being generated
-    showToast('Generating high-quality screenshot...', 'info');
+    showToast('Saving Screenshot...', 'info');
 
     // Create a "Virtual Viewport" container
     // This container is isolated from the current viewport dimensions to ensure consistency on all devices.
-    const virtualWidth = 1200; // Fixed desktop-like width
+    const virtualWidth = 850; // Tighter width for better mobile aspect ratio
     const container = document.createElement('div');
     container.id = 'virtual-screenshot-container';
 
@@ -179,7 +179,7 @@ function takeScreenshot() {
         top: '0',
         width: `${virtualWidth}px`,
         backgroundColor: '#000000',
-        padding: '40px',
+        padding: '20px',
         boxSizing: 'border-box',
         fontFamily: 'Arial, Helvetica, sans-serif',
         zIndex: '-9999',
@@ -216,9 +216,11 @@ function takeScreenshot() {
     const table = document.createElement('table');
     Object.assign(table.style, {
         width: '100%',
-        borderCollapse: 'collapse',
+        borderCollapse: 'separate',
+        borderSpacing: '0',
+        border: '1px solid #ffffff',
         color: '#ffffff',
-        fontSize: '18px', // Slightly larger for readability
+        fontSize: '16px', // Adjusted for tighter width
         textAlign: 'center',
         backgroundColor: '#000000'
     });
@@ -228,14 +230,15 @@ function takeScreenshot() {
     const headerRow = document.createElement('tr');
     const headers = ['Date', 'Time', 'Course', 'Section', 'Classroom'];
 
-    headers.forEach(text => {
+    headers.forEach((text, index) => {
         const th = document.createElement('th');
         th.textContent = text;
         Object.assign(th.style, {
-            border: '2px solid #ffffff', // Thicker border for header
+            borderRight: index === headers.length - 1 ? 'none' : '1px solid #ffffff',
+            borderBottom: '2px solid #ffffff',
             backgroundColor: '#111827', // Gray-900 background for header
             color: '#ffffff',
-            padding: '15px',
+            padding: '10px',
             verticalAlign: 'middle',
             textAlign: 'center',
             fontWeight: 'bold',
@@ -252,18 +255,19 @@ function takeScreenshot() {
     const tbody = document.createElement('tbody');
     const rows = Array.from(scheduleBody.querySelectorAll('tr'));
 
-    rows.forEach(row => {
+    rows.forEach((row, rowIndex) => {
         const newRow = document.createElement('tr');
         const cells = Array.from(row.cells);
 
-        cells.forEach(cell => {
+        cells.forEach((cell, cellIndex) => {
             const td = document.createElement('td');
             td.textContent = cell.textContent;
             Object.assign(td.style, {
-                border: '1px solid #ffffff',
+                borderRight: cellIndex === cells.length - 1 ? 'none' : '1px solid #ffffff',
+                borderBottom: rowIndex === rows.length - 1 ? 'none' : '1px solid #ffffff',
                 backgroundColor: '#000000',
                 color: '#ffffff',
-                padding: '12px 15px 15px 15px', // Top Right Bottom Left - slightly less top padding to visually center
+                padding: '8px 10px 10px 10px', // Tighter padding
                 verticalAlign: 'middle',
                 textAlign: 'center',
                 lineHeight: '1.2'
@@ -279,7 +283,7 @@ function takeScreenshot() {
     const footer = document.createElement('div');
     footer.innerHTML = 'Best of luck buddy, You got it ^_~';
     Object.assign(footer.style, {
-        marginTop: '30px',
+        marginTop: '20px',
         width: '100%',
         textAlign: 'center',
         color: '#9ca3af', // Gray-400
@@ -329,9 +333,6 @@ function takeScreenshot() {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-
-            // Open Modal
-            openScreenshotModal(imageUrl);
 
             showToast('Schedule screenshot saved!', 'success');
 
