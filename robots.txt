@@ -1,0 +1,30 @@
+# BRAC University Exam Schedule Robots.txt
+# Last updated: 2025-01-04
+
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /css/
+Allow: /js/
+Allow: /assets/
+
+# Disallow admin and private directories
+Disallow: /admin/
+Disallow: /private/
+Disallow: /*.json$
+
+# Allow search engine bots
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+# Crawl delay settings
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://bracu-exam-routine.itzmrz.xyz/sitemap.xml

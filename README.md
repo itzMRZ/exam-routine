@@ -1,89 +1,105 @@
+# BRAC University Exam Schedule Viewer
+
 [![VibeCoded Social](https://img.shields.io/badge/VibeCoded-2E2E2E?style=social&logo=githubcopilot&logoColor=auto&labelColor=8000FF)](http://vibe-coding.urbanup.com/18529533)
-# Exam Schedule Viewer
 
-
-
-A lightweight web app for building, sorting, and sharing BRACU exam schedules without spreadsheets.
+A lightweight, interactive exam schedule viewer for BRAC University (BRACU). Built with vanilla HTML/CSS/JavaScript, no bloat.
 
 ## Live Demo
 
-- [bracu-exam-routine.itzmrz.xyz](https://bracu-exam-routine.itzmrz.xyz/)
+[bracu-exam-routine.itzmrz.xyz](https://bracu-exam-routine.itzmrz.xyz/)
 
 ## Features
 
-- Quick course + section lookup with autocomplete
+- Quick course & section lookup with autocomplete
 - Automatic sorting by date and start time
-- High-quality screenshot export for sharing
-- PDF cross-check viewer for source verification
-- Mobile-first layout and keyboard-friendly inputs
-- Clean structure (HTML/CSS/JS) for easy customization
+- Screenshot export for sharing
+- PDF cross-check viewer
+- Mobile-first responsive design
+- Keyboard-friendly navigation
 
 ## Project Structure
 
 ```text
 exam-routine/
-├── index.html              # Main HTML file
-├── css/
-│   └── styles.css          # All CSS styles (consolidated)
+├── index.html           # Main app
+├── css/styles.css
 ├── js/
-│   ├── data.js             # Course data management
-│   ├── dropdown.js         # Dropdown functionality
-│   ├── main.js             # Application initialization
-│   ├── pdf-helper.js       # PDF rendering and processing
-│   ├── pdf-screenshot-helper.js # PDF screenshot utilities
-│   ├── pdf-viewer.js       # PDF display functionality
-│   ├── ui.js               # UI management and interactions
-│   └── utils.js            # Utility functions
-├── convert_schedule.py     # PDF to JSON converter (midterms)
-├── pdf_converter.py        # Advanced PDF converter (finals)
-├── exam_data.json          # Processed exam data
-├── examData.pdf            # Source PDF file
-└── README.md               # This file
+│   ├── data.js         # Data management
+│   ├── ui.js           # UI components
+│   ├── main.js         # Init
+│   ├── dropdown.js     # Autocomplete
+│   ├── pdf-*.js        # PDF handling
+│   └── utils.js
+├── convert_schedule.py  # Midterm: PDF → JSON
+├── pdf_converter.py     # Finals: PDF → JSON (advanced)
+├── set_title.py         # Update metadata
+├── exam_data.json       # Database
+├── examData.pdf
+└── sitemap.xml, robots.txt
 ```
 
 ## Setup
 
-### Option 1: Open the index.html directly
+### Option 1: Direct browser
 
-You can open the `index.html` file directly in your browser. However, some browsers may block loading the PDF for cross-check functionality due to security restrictions.
+Open `index.html` in your browser. (Some browsers may block PDF viewer due to CORS)
 
-### Option 2: Use a local server (recommended)
+### Option 2: Local server (recommended)
 
-1. **Python**: `python -m http.server 8000`
-2. **Node.js**: `npx http-server -p 8000`
-3. **PHP**: `php -S localhost:8000`
+```bash
+# Python
+python -m http.server 8000
 
-Then open <http://localhost:8000> in your browser.
+# Node.js
+npx http-server -p 8000
+
+# PHP
+php -S localhost:8000
+```
+
+Visit [http://localhost:8000](http://localhost:8000)
 
 ## Converting PDF Data
 
-To update the exam data from a new PDF:
+Midterm exams:
 
 ```bash
-# For midterm schedules
 python convert_schedule.py examData.pdf exam_data.json
+```
 
-# For final schedules (recommended - more advanced)
+Final exams (recommended):
+
+```bash
 python pdf_converter.py examData.pdf exam_data.json
 ```
 
-### Updating the displayed exam title
+Features:
 
-The site title is built from `<Exam Name> <Semester>` pulled from `exam_data.json > metadata`.
+- Multi-page extraction
+- Auto header detection
+- Date/time standardization
+- Bounding box calculation
+- Error handling
 
-Use the helper script to update it in one step:
+Update page title:
 
 ```bash
-python set_title.py "MidTerm Exam" "Fall-2025"
+python set_title.py "Final Exam" "Fall-2025"
 ```
 
-This writes `metadata.exam_name`, `metadata.semester`, the combined `metadata.title`, and stamps `metadata.last_updated` (used for the tiny "Last Update" label under the page title). Refresh the site after running the command.
+Updates metadata, title, and last updated timestamp. Refresh to see changes.
 
-## Recent Improvements
+## Technical Stack
 
-- **Cleaned up codebase**: Removed duplicate and unnecessary files
-- **Consolidated CSS**: All styles moved to single CSS file
-- **Optimized JavaScript**: Removed redundant functionality
-- **Better file organization**: Clear structure and naming
-- **Mobile optimized**: Enhanced responsive design
-- **Performance improvements**: Faster loading and better user experience
+- **Frontend**: HTML5, TailwindCSS, Vanilla JS
+- **Data Processing**: Python (pdfplumber)
+- **Deployment**: Static hosting (Vercel, GitHub Pages, etc.)
+- **Analytics**: Plausible Analytics, Vercel Web Analytics
+- **PDF**: PDF.js + html2canvas
+
+## Recent Changes
+
+- Cleaned up codebase
+- Consolidated CSS
+- Optimized JavaScript
+- Added SEO metadata (see `index.html` for details)
