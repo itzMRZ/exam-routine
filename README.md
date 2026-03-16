@@ -61,13 +61,8 @@ Visit [http://localhost:8000](http://localhost:8000)
 
 ## Converting PDF Data
 
-Midterm exams:
 
-```bash
-python convert_schedule.py examData.pdf exam_data.json
-```
-
-Final exams (recommended):
+Fetch PDF:
 
 ```bash
 python pdf_converter.py examData.pdf exam_data.json
