@@ -97,6 +97,31 @@ Updates metadata, title, and last updated timestamp. Refresh to see changes.
 - **Analytics**: Plausible Analytics, Vercel Web Analytics
 - **PDF**: PDF.js + html2canvas
 
+## Python dependencies
+
+This repository uses Python for PDF → JSON conversion. The only runtime dependency required by the scripts in the repository is:
+
+- `pdfplumber`
+
+Install dependencies with pip. If `pip` is missing on your system, bootstrap it first and upgrade pip:
+
+```bash
+# Ensure pip is available and up-to-date
+python -m ensurepip --upgrade
+python -m pip install --upgrade pip
+
+# Install project dependencies
+python -m pip install -r requirements.txt
+```
+
+On Windows you can run the provided `install_deps.bat` script:
+
+```powershell
+./install_deps.bat
+```
+
+If you want, I can run the installer now in your environment.
+
 ## Recent Changes
 
 - Cleaned up codebase
