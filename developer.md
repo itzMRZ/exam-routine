@@ -39,8 +39,8 @@ exam-routine/
 │   ├── pdf-viewer.js       # PDF display functionality
 │   ├── ui.js               # UI management (toasts, interactions)
 │   └── utils.js            # Utility functions
-├── convert_schedule.py     # Python script to convert PDF to JSON
-├── converterV2.py          # newer PDF conversion script
+├── convert_schedule.py     # Deprecated legacy converter (not used)
+├── pdf_converter.py        # Main PDF conversion script
 ├── exam_data.json          # Processed exam data
 ├── examData.pdf            # Source PDF file
 └── README.md               # General readme file
@@ -157,7 +157,7 @@ Exam data is stored in JSON format:
 
 ### Data Flow
 
-1. PDF is converted to JSON using Python scripts (convert_schedule.py or converterV2.py).
+1. PDF is converted to JSON using `pdf_converter.py` (main script).
 2. JSON data is loaded at runtime.
 3. When a user selects courses, relevant data is filtered and displayed.
 
@@ -307,7 +307,7 @@ The cross-check feature allows users to verify their schedule against the origin
 To update the source PDF for a new semester:
 
 1. Replace `examData.pdf` with the new file (keep the same name)
-2. Run the conversion script: `python converterV2.py`
+2. Run the conversion script: `python pdf_converter.py examData.pdf exam_data.json`
 3. Verify the generated `exam_data.json` has correct data
 4. Update the title in `index.html` to reflect the new semester
 

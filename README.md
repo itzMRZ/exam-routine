@@ -30,7 +30,7 @@ exam-routine/
 │   ├── dropdown.js     # Autocomplete
 │   ├── pdf-*.js        # PDF handling
 │   └── utils.js
-├── convert_schedule.py  # Midterm: PDF → JSON
+├── convert_schedule.py  # Deprecated: Midterm PDF → JSON
 ├── pdf_converter.py     # Finals: PDF → JSON (advanced)
 ├── set_title.py         # Update metadata
 ├── exam_data.json       # Database
@@ -60,6 +60,8 @@ php -S localhost:8000
 Visit [http://localhost:8000](http://localhost:8000)
 
 ## Converting PDF Data
+
+`convert_schedule.py` is deprecated and no longer used in the primary workflow.
 
 
 Fetch PDF:

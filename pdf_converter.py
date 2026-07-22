@@ -312,7 +312,7 @@ def convert_pdf_to_json(pdf_path, json_path):
 if __name__ == "__main__":
     # Check for proper command-line arguments
     if len(sys.argv) < 3:
-        print("Usage: python convert_schedule_final.py input.pdf output.json")
+        print("Usage: python pdf_converter.py input.pdf output.json")
         sys.exit(1)
 
     pdf_path = sys.argv[1]
