@@ -90,6 +90,38 @@ function setScheduleStatus(status) {
     label.classList.remove('hidden');
 }
 
+function setDataWarning(message) {
+    const banner = document.getElementById('data-warning-banner');
+    if (!banner) return;
+
+    if (!message) {
+        banner.textContent = '';
+        banner.classList.add('hidden');
+        return;
+    }
+
+    banner.textContent = `WARNING: ${message}`;
+    banner.classList.remove('hidden');
+}
+
+function showDownloadWarning(onContinue) {
+    const modal = document.getElementById('download-warning-modal');
+    const continueButton = document.getElementById('download-warning-continue');
+    const cancelButton = document.getElementById('download-warning-cancel');
+    if (!modal || !continueButton || !cancelButton) {
+        onContinue();
+        return;
+    }
+
+    modal.classList.remove('hidden');
+    const close = () => modal.classList.add('hidden');
+    cancelButton.onclick = close;
+    continueButton.onclick = () => {
+        close();
+        onContinue();
+    };
+}
+
 /**
  * Adds exams to the schedule table
  * @param {Array} exams - Array of exam objects to add
@@ -115,14 +147,14 @@ function addExamsToSchedule(exams) {
             const row = document.createElement('tr');
             row.className = 'border-b border-white hover:bg-blue-800 transition';
 
-            // Create row cells
-            row.innerHTML = `
-                <td class="px-3 py-3 align-middle">${exam.date}</td>
-                <td class="px-3 py-3 align-middle">${exam.time}</td>
-                <td class="px-3 py-3 align-middle">${exam.courseCode}</td>
-                <td class="px-3 py-3 align-middle">${exam.section}</td>
-                <td class="px-3 py-3 align-middle">${exam.classroom}</td>
-            `;
+            // Use textContent so values from official or remote JSON cannot become HTML.
+            const cells = [exam.date, exam.time, exam.courseCode, exam.section, exam.classroom];
+            cells.forEach(value => {
+                const cell = document.createElement('td');
+                cell.className = 'px-3 py-3 align-middle';
+                cell.textContent = value == null ? '' : String(value);
+                row.appendChild(cell);
+            });
 
             scheduleBody.appendChild(row);
 
@@ -169,6 +201,14 @@ function sortScheduleTable() {
  * Takes a screenshot of the schedule table using a virtual viewport for consistency
  */
 function takeScreenshot() {
+    if (window.examScheduleSource !== 'official') {
+        showDownloadWarning(generateScreenshot);
+        return;
+    }
+    generateScreenshot();
+}
+
+function generateScreenshot() {
     // Check if table has content
     const scheduleBody = document.getElementById('schedule-body');
     if (!scheduleBody || scheduleBody.children.length === 0) {
@@ -462,6 +502,7 @@ window.ui = {
     setCustomTitle,
     setLastUpdatedLabel,
     setScheduleStatus,
+    setDataWarning,
     addExamsToSchedule,
     sortScheduleTable,
     takeScreenshot,
