@@ -78,6 +78,19 @@ function setLastUpdatedLabel(rawValue) {
 }
 
 /**
+ * Adds the source state to the existing update label without changing the
+ * page layout. This is intentionally optional for older local data files.
+ */
+function setScheduleStatus(status) {
+    const label = document.getElementById('last-update');
+    if (!label || !status) return;
+
+    const current = label.textContent.replace(/\s+·\s+(Official|Tentative \/ Connect)$/, '');
+    label.textContent = `${current} · ${status}`.trim();
+    label.classList.remove('hidden');
+}
+
+/**
  * Adds exams to the schedule table
  * @param {Array} exams - Array of exam objects to add
  */
@@ -448,6 +461,7 @@ window.ui = {
     updateTitle,
     setCustomTitle,
     setLastUpdatedLabel,
+    setScheduleStatus,
     addExamsToSchedule,
     sortScheduleTable,
     takeScreenshot,

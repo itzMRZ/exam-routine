@@ -14,6 +14,7 @@ A lightweight, interactive exam schedule viewer for BRAC University (BRACU). Bui
 - Automatic sorting by date and start time
 - Screenshot export for sharing
 - PDF cross-check viewer
+- Optional CDN confirmation lookup; confirmed official PDFs can be fetched, while local data remains the fallback
 - Mobile-first responsive design
 - Keyboard-friendly navigation
 
@@ -118,6 +119,13 @@ On Windows you can run the provided `install_deps.bat` script:
 ```
 
 If you want, I can run the installer now in your environment.
+
+## CDN confirmation
+
+The viewer still loads `exam_data.json` first. It then checks the optional
+`https://connect-cdn.itzmrz.xyz/exam_status.json` endpoint. Only an entry with
+`confirmed: true` and a valid `dataUrl` can replace the local schedule. If the
+endpoint is unavailable, the local parsed PDF data is used unchanged.
 
 ## Recent Changes
 
