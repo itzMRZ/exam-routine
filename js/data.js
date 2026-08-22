@@ -113,7 +113,8 @@ function adaptCdnSchedule(payload, examType) {
             semester: displaySemester(semester),
             title: `${examName} ${displaySemester(semester)}`,
             last_updated: payload.metadata?.lastUpdated || null,
-            source: 'connect-fallback'
+            source: 'connect-fallback',
+            sources: payload.metadata?.sources || {}
         },
         exams
     };
@@ -144,8 +145,33 @@ async function resolveSchedule(localData) {
         );
         const examType = getPhaseExamType(cdnData?.metadata || localData?.metadata || {});
         const fallbackData = cdnData ? adaptCdnSchedule(cdnData, examType) : null;
+        const mergedSource = cdnData?.metadata?.sources?.[examType] || null;
         const record = confirmationStatus?.semesters?.[currentSemesterKey]?.[examType] || null;
         const nearExam = isNearExam(cdnData?.metadata || {}, examType);
+
+        if (fallbackData && mergedSource?.source === 'pdf' && mergedSource.confirmed) {
+            return {
+                data: fallbackData,
+                source: 'official',
+                sourceLabel: 'Official PDF',
+                warning: null,
+                examType,
+                semesterKey: currentSemesterKey,
+                status: mergedSource
+            };
+        }
+
+        if (fallbackData && mergedSource?.source === 'mixed') {
+            return {
+                data: fallbackData,
+                source: 'fallback',
+                sourceLabel: 'Mixed PDF / Connect',
+                warning: 'This routine contains fallback Connect entries and has not been fully confirmed by an official PDF. Do not use it for your exam.',
+                examType,
+                semesterKey: currentSemesterKey,
+                status: mergedSource
+            };
+        }
 
         if (record?.confirmed && record.dataUrl && nearExam) {
             const officialData = await fetchJson(normalizeOfficialUrl(record.dataUrl));
