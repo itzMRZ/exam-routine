@@ -8,6 +8,7 @@ let courseSections = {};
 const EXAM_STATUS_URL = 'https://connect-cdn.itzmrz.xyz/exam_status.json';
 const SEMESTER_STATUS_URL = 'https://connect-cdn.itzmrz.xyz/status.json';
 const EXAMS_FALLBACK_URL = 'https://connect-cdn.itzmrz.xyz/exams.json';
+const EXAM_PAGES_URL = 'exam_pages.json';
 const OFFICIAL_WINDOW_DAYS = 10;
 const TRUSTED_SCHEDULE_HOSTS = new Set([
     'bracu-exam-routine.itzmrz.xyz',
@@ -22,6 +23,15 @@ function displaySemester(value) {
     const normalized = normalizeSemesterKey(value);
     const match = normalized.match(/^(spring|summer|fall)(\d{4})$/);
     return match ? `${match[1][0].toUpperCase()}${match[1].slice(1)} ${match[2]}` : String(value || 'Unknown');
+}
+
+function normalizeSectionKey(section) {
+    const text = String(section == null ? '' : section).trim();
+    return /^\d+$/.test(text) ? text.padStart(2, '0') : text;
+}
+
+function buildPageKey(courseCode, section) {
+    return `${String(courseCode).toUpperCase()}|${normalizeSectionKey(section)}`;
 }
 
 function getExamType(metadata) {
@@ -275,6 +285,39 @@ async function loadScheduleData() {
                     boundingBox: exam.BoundingBox || null
                 };
             });
+
+        // PDF page mapping lives in a separate file so the CDN exams.json
+        // schema stays untouched. Apply it only when the served schedule is
+        // the official PDF one, and only when the mapping matches the served
+        // semester and entry count (i.e. the PDF data is fresh).
+        if (resolved.source === 'official') {
+            try {
+                const pagesPayload = await fetchJson(EXAM_PAGES_URL);
+                const pagesMeta = pagesPayload?.metadata || {};
+                const pages = pagesPayload?.pages || {};
+                const servedSemester = normalizeSemesterKey(data.metadata?.semester);
+                const pagesSemester = normalizeSemesterKey(pagesMeta.semester);
+                const totalsMatch = !pagesMeta.totalEntries || pagesMeta.totalEntries === examData.length;
+                if (pagesSemester && servedSemester && pagesSemester !== servedSemester) {
+                    console.warn('exam_pages.json belongs to a different semester; skipping page mapping');
+                } else if (!totalsMatch) {
+                    console.warn('exam_pages.json entry count does not match the served schedule; skipping page mapping');
+                } else {
+                    let attached = 0;
+                    for (const exam of examData) {
+                        const info = pages[buildPageKey(exam.courseCode, exam.section)];
+                        if (info && Number.isInteger(info.pageNumber) && info.pageNumber > 0) {
+                            exam.pageNumber = info.pageNumber;
+                            exam.boundingBox = info.boundingBox || null;
+                            attached += 1;
+                        }
+                    }
+                    console.log(`Attached PDF page numbers to ${attached} exams from ${EXAM_PAGES_URL}`);
+                }
+            } catch (e) {
+                console.warn(`Could not load ${EXAM_PAGES_URL}:`, e.message);
+            }
+        }
 
         console.log('Loaded exam data:', examData.length, 'entries');
         ui.showToast(`Loaded ${examData.length} exam entries successfully`, 'success');
