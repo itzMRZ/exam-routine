@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "semesters": {
+    "summer2026": {
+      "final": {
+        "confirmed": true,
+        "source": "official-pdf",
+        "dataUrl": "https://bracu-exam-routine.itzmrz.xyz/exam_data.json",
+        "updatedAt": "2026-09-09T09:35:35Z",
+        "midExamStartDate": "2026-07-25",
+        "midExamEndDate": "2026-08-02"
+      }
+    }
+  }
+}

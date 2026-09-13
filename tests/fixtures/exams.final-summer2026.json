@@ -1,0 +1,73 @@
+{
+  "metadata": {
+    "totalExams": 1565,
+    "midExamStartDate": "2026-07-25",
+    "midExamEndDate": "2026-08-02",
+    "finalExamStartDate": "2026-09-12",
+    "finalExamEndDate": "2026-09-19",
+    "lastUpdated": "2026-09-12T10:13:13.093125+00:00",
+    "semester": "Summer2026",
+    "sources": {
+      "final": {
+        "source": "pdf",
+        "confirmed": true,
+        "matchedEntries": 1565,
+        "totalEntries": 1565,
+        "updatedAt": "2026-09-09T09:35:35Z",
+        "dataUrl": "https://bracu-exam-routine.itzmrz.xyz/exam_data.json"
+      },
+      "midterm": {
+        "source": "cdn",
+        "confirmed": false,
+        "matchedEntries": 0,
+        "totalEntries": 0,
+        "updatedAt": null,
+        "dataUrl": null
+      }
+    }
+  },
+  "exams": [
+    {
+      "courseCode": "ACT201",
+      "sectionName": "1",
+      "sectionId": null,
+      "sectionType": "THEORY",
+      "midExamDate": null,
+      "midExamTime": null,
+      "midExamRoom": null,
+      "midExamSource": null,
+      "finalExamDate": "2026-09-13",
+      "finalExamTime": "11:00-13:00",
+      "finalExamRoom": "09G-31T",
+      "finalExamSource": "pdf"
+    },
+    {
+      "courseCode": "ACT201",
+      "sectionName": "2",
+      "sectionId": null,
+      "sectionType": "THEORY",
+      "midExamDate": null,
+      "midExamTime": null,
+      "midExamRoom": null,
+      "midExamSource": null,
+      "finalExamDate": "2026-09-13",
+      "finalExamTime": "11:00-13:00",
+      "finalExamRoom": "09G-31T",
+      "finalExamSource": "pdf"
+    },
+    {
+      "courseCode": "ACT201",
+      "sectionName": "3",
+      "sectionId": null,
+      "sectionType": "THEORY",
+      "midExamDate": null,
+      "midExamTime": null,
+      "midExamRoom": null,
+      "midExamSource": null,
+      "finalExamDate": "2026-09-13",
+      "finalExamTime": "11:00-13:00",
+      "finalExamRoom": "07A-04C",
+      "finalExamSource": "pdf"
+    }
+  ]
+}

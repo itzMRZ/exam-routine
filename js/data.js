@@ -54,8 +54,26 @@ function daysUntil(value, now = new Date()) {
 }
 
 function getPhaseExamType(metadata, now = new Date()) {
+    const midStart = daysUntil(metadata?.midExamStartDate, now);
     const midEnd = daysUntil(metadata?.midExamEndDate, now);
     const finalStart = daysUntil(metadata?.finalExamStartDate, now);
+    const finalEnd = daysUntil(metadata?.finalExamEndDate, now);
+
+    // A phase whose own window still contains today wins. Without this, the
+    // finals phase flips back to 'midterm' the moment the first final exam
+    // day arrives (finalExamStartDate is no longer in the future), and the
+    // site adapts a finals-only payload with the midterm keys -> 0 entries.
+    const midtermToday = midStart !== null && midEnd !== null && midStart <= 0 && midEnd >= 0;
+    const finalToday = finalStart !== null && finalEnd !== null && finalStart <= 0 && finalEnd >= 0;
+
+    if (midtermToday) return 'midterm';
+    if (finalToday) return 'final';
+
+    // Metadata that only describes a final phase (no midterm dates at all)
+    // can only belong to the final schedule.
+    if (midStart === null && midEnd === null && (finalStart !== null || finalEnd !== null)) {
+        return 'final';
+    }
 
     if (midEnd !== null && midEnd < 0 && (finalStart === null || finalStart >= 0)) {
         return 'final';
