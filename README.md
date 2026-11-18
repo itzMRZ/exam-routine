@@ -64,10 +64,11 @@ Visit [http://localhost:8000](http://localhost:8000)
 `convert_schedule.py` is deprecated and no longer used in the primary workflow.
 
 
-Fetch PDF:
+Fetch PDF (midterm and final both use the same converter):
 
 ```bash
-python pdf_converter.py examData.pdf exam_data.json
+python pdf_converter.py examData.pdf exam_data.json --exam-name "Midterm Exam" --semester "Fall-2026"
+python build_pages_json.py exam_data.json exam_pages.json
 ```
 
 Features:

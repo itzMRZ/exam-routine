@@ -174,7 +174,10 @@ async function resolveSchedule(localData) {
         const examType = getPhaseExamType(cdnData?.metadata || localData?.metadata || {});
         const fallbackData = cdnData ? adaptCdnSchedule(cdnData, examType) : null;
         const mergedSource = cdnData?.metadata?.sources?.[examType] || null;
-        const record = confirmationStatus?.semesters?.[currentSemesterKey]?.[examType] || null;
+        const phaseSemesterKey = normalizeSemesterKey(cdnData?.metadata?.semester);
+        const record = confirmationStatus?.semesters?.[phaseSemesterKey]?.[examType]
+            || confirmationStatus?.semesters?.[currentSemesterKey]?.[examType]
+            || null;
         const nearExam = isNearExam(cdnData?.metadata || {}, examType);
 
         if (fallbackData && mergedSource?.source === 'pdf' && mergedSource.confirmed) {
@@ -189,6 +192,29 @@ async function resolveSchedule(localData) {
             };
         }
 
+        // A confirmed official PDF record outranks an unconfirmed CDN payload —
+        // including a "mixed" one, where the PDF only overlaps part of the CDN
+        // list. The PDF is the authoritative routine for its phase.
+        if (record?.confirmed && record.dataUrl && nearExam) {
+            try {
+                const officialData = await fetchJson(normalizeOfficialUrl(record.dataUrl));
+                if (!officialData || !Array.isArray(officialData.exams)) {
+                    throw new Error('official schedule has an invalid exam_data shape');
+                }
+                return {
+                    data: officialData,
+                    source: 'official',
+                    sourceLabel: 'Official PDF',
+                    warning: null,
+                    examType,
+                    semesterKey: currentSemesterKey,
+                    status: record
+                };
+            } catch (error) {
+                console.warn('Confirmed official schedule unavailable, using CDN payload:', error.message);
+            }
+        }
+
         if (fallbackData && mergedSource?.source === 'mixed') {
             return {
                 data: fallbackData,
@@ -198,22 +224,6 @@ async function resolveSchedule(localData) {
                 examType,
                 semesterKey: currentSemesterKey,
                 status: mergedSource
-            };
-        }
-
-        if (record?.confirmed && record.dataUrl && nearExam) {
-            const officialData = await fetchJson(normalizeOfficialUrl(record.dataUrl));
-            if (!officialData || !Array.isArray(officialData.exams)) {
-                throw new Error('official schedule has an invalid exam_data shape');
-            }
-            return {
-                data: officialData,
-                source: 'official',
-                sourceLabel: 'Official PDF',
-                warning: null,
-                examType,
-                semesterKey: currentSemesterKey,
-                status: record
             };
         }
 

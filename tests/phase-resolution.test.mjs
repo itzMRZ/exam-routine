@@ -49,6 +49,8 @@ function loadSite(nowIsoDay, payloads, uiCalls) {
     context.setTimeout = setTimeout;
     context.clearTimeout = clearTimeout;
     context.AbortController = AbortController;
+    context.URL = URL;
+    context.location = { href: 'https://bracu-exam-routine.itzmrz.xyz/' };
     context.Date = fixedDate(nowIsoDay);
     context.ui = new Proxy({}, {
         get: (_t, prop) => (...args) => uiCalls.push([prop, args])
@@ -173,4 +175,48 @@ test('after finals the site stops serving the finished finals payload', async ()
     assert.equal(site.read('examData.length'), 0);
     assert.equal(site.read('isFinalsSchedule'), false);
     assert.match(site.window.examScheduleWarning, /has not been confirmed by an official PDF/);
+});
+
+test('a confirmed official record outranks a mixed CDN payload', async () => {
+    const uiCalls = [];
+    const payloads = payloadSet(readFixture('exams.midterm-summer2026.json'));
+
+    // CDN only overlaps part of the official PDF -> generator marks it "mixed".
+    const mixedCdn = JSON.parse(JSON.stringify(payloads['https://connect-cdn.itzmrz.xyz/exams.json']));
+    mixedCdn.metadata.sources.midterm = {
+        source: 'mixed',
+        confirmed: false,
+        matchedEntries: 2,
+        totalEntries: 3,
+        updatedAt: '2026-07-22T18:49:21Z',
+        dataUrl: null
+    };
+    payloads['https://connect-cdn.itzmrz.xyz/exams.json'] = mixedCdn;
+
+    // ...while exam_status.json carries a confirmed official PDF record.
+    const status = JSON.parse(JSON.stringify(payloads['https://connect-cdn.itzmrz.xyz/exam_status.json']));
+    status.semesters.summer2026.midterm = {
+        confirmed: true,
+        source: 'official-pdf',
+        dataUrl: 'https://bracu-exam-routine.itzmrz.xyz/exam_data.json',
+        updatedAt: '2026-07-22T18:49:21Z'
+    };
+    payloads['https://connect-cdn.itzmrz.xyz/exam_status.json'] = status;
+
+    payloads['https://bracu-exam-routine.itzmrz.xyz/exam_data.json'] = {
+        metadata: { exam_name: 'Midterm Exam', semester: 'Summer-2026', total_entries: 2 },
+        exams: [
+            { Course: 'ACT201', Section: '1', 'Mid Date': '2026-07-27', 'Start Time': '11:00', 'End Time': '13:00', 'Room.': '09G-31T' },
+            { Course: 'CSE101', Section: '2', 'Mid Date': '2026-07-28', 'Start Time': '14:00', 'End Time': '16:00', 'Room.': '07A-02C' }
+        ]
+    };
+
+    const site = loadSite('2026-07-28', payloads, uiCalls);
+    await site.data.loadScheduleData();
+
+    assert.equal(site.window.examScheduleSource, 'official', 'official PDF must win over mixed CDN');
+    assert.equal(site.window.examScheduleWarning, null);
+    assert.equal(site.read('examData.length'), 2);
+    assert.equal(site.read('isFinalsSchedule'), false);
+    assert.equal(site.data.findExams('CSE101', '2')[0].classroom, '07A-02C');
 });

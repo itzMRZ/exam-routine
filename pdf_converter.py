@@ -1,4 +1,5 @@
 import sys
+import os
 import json
 import re
 from datetime import datetime
@@ -36,8 +37,19 @@ def standardize_time(time_str):
 
 def is_valid_entry(entry):
     """Check if an entry has the minimum required fields to be considered valid"""
-    required_fields = ["Course", "Section", "Final Date"]
-    return all(field in entry and entry[field] for field in required_fields)
+    required_fields = ["Course", "Section"]
+    if not all(field in entry and entry[field] for field in required_fields):
+        return False
+    return bool(entry.get("Final Date") or entry.get("Mid Date"))
+
+
+def exam_date_key(exam_name):
+    """Date column used by this phase's routine PDF."""
+    return "Final Date" if "final" in (exam_name or "").lower() else "Mid Date"
+
+
+# Date column name used when the PDF's header is a bare "Date".
+DATE_HEADER = "Final Date"
 
 def is_header_row(row, headers):
     """Check if a row is likely a header row"""
@@ -48,7 +60,7 @@ def is_header_row(row, headers):
     row_text = ' '.join(str(cell).lower() for cell in row if cell)
     return any(text in row_text for text in header_texts)
 
-def convert_pdf_to_json(pdf_path, json_path):
+def convert_pdf_to_json(pdf_path, json_path, exam_name="Final Exam", semester="Unknown"):
     print(f"Processing {pdf_path}...")
 
     # Store all entries here
@@ -78,8 +90,12 @@ def convert_pdf_to_json(pdf_path, json_path):
                     global_headers.append("Course")
                 elif "section" in header.lower() or "sec" in header.lower():
                     global_headers.append("Section")
-                elif "date" in header.lower():
+                elif "mid" in header.lower() and "date" in header.lower():
+                    global_headers.append("Mid Date")
+                elif "final" in header.lower() and "date" in header.lower():
                     global_headers.append("Final Date")
+                elif "date" in header.lower():
+                    global_headers.append(DATE_HEADER)
                 elif "start" in header.lower() or "from" in header.lower():
                     global_headers.append("Start Time")
                 elif "end" in header.lower() or "to" in header.lower():
@@ -109,6 +125,7 @@ def convert_pdf_to_json(pdf_path, json_path):
 
             # Extract tables from the current page
             tables = page.extract_tables()
+            table_geoms = page.find_tables()
 
             if tables:
                 print(f"  Found {len(tables)} tables on page {page_num}")
@@ -196,9 +213,15 @@ def convert_pdf_to_json(pdf_path, json_path):
 
                             # Calculate bounding box for the row with safeguards
                             if matched_words:
-                                # Keep the standard horizontal coordinates as they appear consistent in the examples
-                                standard_x0 = 89.664
-                                standard_x1 = 506.66303999999997
+                                # Use the detected table's horizontal extent so the
+                                # highlight covers the full row on any page size.
+                                if table_idx < len(table_geoms):
+                                    tb = table_geoms[table_idx].bbox
+                                    standard_x0 = float(tb[0])
+                                    standard_x1 = float(tb[2])
+                                else:
+                                    standard_x0 = 89.664
+                                    standard_x1 = 506.66303999999997
 
                                 # Get the actual y-coordinates from the SL cell - this ensures each row has unique coordinates
                                 # that match its actual position in the PDF
@@ -235,8 +258,9 @@ def convert_pdf_to_json(pdf_path, json_path):
                             }
 
                         # Standardize date and time fields
-                        if "Final Date" in entry:
-                            entry["Final Date"] = standardize_date(entry["Final Date"])
+                        for date_field in ("Final Date", "Mid Date"):
+                            if date_field in entry:
+                                entry[date_field] = standardize_date(entry[date_field])
                         if "Start Time" in entry:
                             entry["Start Time"] = standardize_time(entry["Start Time"])
                         if "End Time" in entry:
@@ -269,16 +293,26 @@ def convert_pdf_to_json(pdf_path, json_path):
 
     print(f"Total valid entries extracted: {len(all_entries)}")
 
+    date_key = exam_date_key(exam_name)
+    dates = sorted({e[date_key] for e in all_entries if re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(e.get(date_key, "")))})
+    phase_key = "finalExam" if date_key == "Final Date" else "midExam"
+
     # Create final output with metadata
     output = {
         "metadata": {
-            "source": pdf_path,
+            "source": os.path.basename(pdf_path),
             "generated_at": datetime.now().isoformat(),
             "total_entries": len(all_entries),
+            "exam_name": exam_name,
+            "semester": semester,
+            "title": f"{exam_name} {semester}".strip(),
+            "last_updated": datetime.now().astimezone().isoformat(),
+            f"{phase_key}StartDate": dates[0] if dates else None,
+            f"{phase_key}EndDate": dates[-1] if dates else None,
             "fields_description": {
                 "Course": "Course code",
                 "Section": "Class section number",
-                "Final Date": "Examination date (YYYY-MM-DD)",
+                date_key: "Examination date (YYYY-MM-DD)",
                 "Start Time": "Exam start time (24-hour format)",
                 "End Time": "Exam end time (24-hour format)",
                 "Room.": "Examination room",
@@ -310,11 +344,14 @@ def convert_pdf_to_json(pdf_path, json_path):
     return len(all_entries)  # Return the number of entries for verification
 
 if __name__ == "__main__":
-    # Check for proper command-line arguments
-    if len(sys.argv) < 3:
-        print("Usage: python pdf_converter.py input.pdf output.json")
-        sys.exit(1)
+    import argparse
 
-    pdf_path = sys.argv[1]
-    json_path = sys.argv[2]
-    convert_pdf_to_json(pdf_path, json_path)
+    parser = argparse.ArgumentParser(description="Convert a BRACU exam schedule PDF into exam_data.json")
+    parser.add_argument("pdf")
+    parser.add_argument("json")
+    parser.add_argument("--exam-name", default="Final Exam", help='e.g. "Midterm Exam" or "Final Exam"')
+    parser.add_argument("--semester", default="Unknown", help='e.g. "Fall-2026"')
+    args = parser.parse_args()
+
+    DATE_HEADER = exam_date_key(args.exam_name)
+    convert_pdf_to_json(args.pdf, args.json, exam_name=args.exam_name, semester=args.semester)

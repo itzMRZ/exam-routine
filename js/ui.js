@@ -29,8 +29,8 @@ function showToast(message, type = 'info') {
  */
 function updateTitle(isFinalsSchedule) {
     const examType = isFinalsSchedule ? "FINAL" : "MIDTERM";
-    document.querySelector('h1').textContent = `SUMMER-2025 ${examType} SCHEDULE`;
-    document.title = `Summer-2025 ${examType} Schedule`;
+    document.querySelector('h1').textContent = `BRACU ${examType} SCHEDULE`;
+    document.title = `BRAC University ${examType} Schedule`;
 }
 
 /**

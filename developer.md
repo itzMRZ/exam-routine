@@ -307,9 +307,11 @@ The cross-check feature allows users to verify their schedule against the origin
 To update the source PDF for a new semester:
 
 1. Replace `examData.pdf` with the new file (keep the same name)
-2. Run the conversion script: `python pdf_converter.py examData.pdf exam_data.json`
-3. Verify the generated `exam_data.json` has correct data
-4. Update the title in `index.html` to reflect the new semester
+2. Run the conversion script with the phase name:
+   `python pdf_converter.py examData.pdf exam_data.json --exam-name "Midterm Exam" --semester "Fall-2026"`
+   (the `--exam-name` picks the `Mid Date` vs `Final Date` column)
+3. Rebuild the PDF page map: `python build_pages_json.py exam_data.json exam_pages.json`
+4. Verify the generated `exam_data.json` has correct data
 
 ### Modifying the UI
 
